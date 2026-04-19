@@ -20,6 +20,7 @@ suppressPackageStartupMessages({
   library(waiter)
   library(shinycssloaders)
   library(digest)
+  library(bcrypt)
 })
 
 # ═══ KONFİQURASİYA ═══
@@ -76,8 +77,69 @@ onStop(function() {
   if (!is.null(pool) && pool$valid) try(poolClose(pool), silent = TRUE)
 })
 
-# ═══ Helper: NULL-safe operator ═══
-`%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || is.na(a)) b else a
+
+# ═══ Bağlantı məlumatını tapmaq ═══
+get_connection_info <- function(session) {
+  list(
+    ip = session$request$HTTP_X_FORWARDED_FOR %||% 
+         session$request$REMOTE_ADDR %||% "127.0.0.1",
+    user_agent = session$request$HTTP_USER_AGENT %||% "Unknown",
+    tailscale = session$request$HTTP_X_TAILSCALE_USER %||% 
+                session$request$HTTP_HOST %||% "local"
+  )
+}
+
+`%||%` <- function(a, b) if (is.null(a) || is.na(a) || a == "") b else a
+
+# ═══ AUDIT: Sorğunu log et ═══
+log_query <- function(user_id, action, resource = NULL, 
+                      query_text = NULL, source = "dashboard",
+                      duration_ms = NULL, status = "success",
+                      ip = NULL, tailscale = NULL, user_agent = NULL,
+                      ai_input = NULL, ai_output = NULL, ai_cost = NULL) {
+  if (is.null(user_id)) return(invisible(NULL))
+  tryCatch({
+    dbExecute(pool, "
+      INSERT INTO audit.query_log (
+        user_id, username, user_role, action, resource, 
+        query_text, source, duration_ms, status,
+        ip_address, tailscale_name, user_agent,
+        ai_tokens_input, ai_tokens_output, ai_cost_usd
+      )
+      SELECT $1, username, role, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+      FROM audit.users WHERE id = $1
+    ", params = list(user_id, action, resource, 
+                     substr(query_text %||% "", 1, 500), source, 
+                     duration_ms, status, ip, tailscale, user_agent,
+                     ai_input, ai_output, ai_cost))
+  }, error = function(e) {
+    message("Log xəta: ", e$message)
+  })
+}
+
+# ═══ AUTH: Password yoxla ═══
+authenticate_user <- function(username, password) {
+  tryCatch({
+    res <- dbGetQuery(pool, 
+      "SELECT * FROM audit.verify_password($1, $2)",
+      params = list(username, password))
+    if (nrow(res) == 0) return(list(valid = FALSE, msg = "Xəta"))
+    res[1, ]
+  }, error = function(e) {
+    list(valid = FALSE, msg = paste("Xəta:", e$message))
+  })
+}
+
+# ═══ AUTH: Hüquq yoxla ═══
+check_permission <- function(user_id, resource, action) {
+  tryCatch({
+    res <- dbGetQuery(pool,
+      "SELECT audit.check_permission($1, $2, $3) AS has_perm",
+      params = list(user_id, resource, action))
+    isTRUE(res$has_perm)
+  }, error = function(e) FALSE)
+}
+
 
 # ═══ SAFE QUERY ═══
 safe_query <- function(sql) {
@@ -475,7 +537,7 @@ body { font-family: -apple-system, 'SF Pro Text', sans-serif; }
 # ═══════════════════════════════════════════════════════════════
 # UI
 # ═══════════════════════════════════════════════════════════════
-ui <- bs4DashPage(
+main_ui <- bs4DashPage(
   title = APP_TITLE,
   header = bs4DashNavbar(
     title = bs4DashBrand(title = "🏗️ ARTI TTİ", color = "primary"),
@@ -495,8 +557,7 @@ ui <- bs4DashPage(
       bs4SidebarMenuItem("Şikayətlər",        tabName = "complaints",  icon = icon("bullhorn")),
       bs4SidebarMenuItem("Deadline",          tabName = "deadlines",   icon = icon("stopwatch")),
       bs4SidebarMenuItem("Trendlər",          tabName = "trends",      icon = icon("chart-line")),
-      bs4SidebarMenuItem("Claude AI",         tabName = "ai",          icon = icon("wand-magic-sparkles")),
-      bs4SidebarMenuItem("Audit Log",         tabName = "audit",       icon = icon("shield-halved"))
+      bs4SidebarMenuItem("Claude AI",         tabName = "ai",          icon = icon("wand-magic-sparkles"))
     )
   ),
   body = bs4DashBody(
@@ -728,63 +789,10 @@ ui <- bs4DashPage(
           )
         ),
         
-      ),
-      
-      # ═══ AUDIT TAB ═══
-      bs4TabItem(tabName = "audit",
-        h2("Audit Log — Real-time Monitoring", class = "page-title"),
-        p("Sistemde butun emeliyyatlarin canli izlenmesi", 
-          style = "color:#64748b; margin-bottom:20px;"),
-        
         fluidRow(
-          bs4ValueBoxOutput("audit_kpi_total", width = 3),
-          bs4ValueBoxOutput("audit_kpi_today", width = 3),
-          bs4ValueBoxOutput("audit_kpi_users", width = 3),
-          bs4ValueBoxOutput("audit_kpi_mobile", width = 3)
-        ),
-        
-        fluidRow(
-          bs4Card(title = "Aktivlik menbe uzre (son 7 gun)", width = 6,
-                  with_spinner(plotlyOutput("audit_plot_source", height = "300px"))),
-          bs4Card(title = "Saat uzre aktivlik (bu gun)", width = 6,
-                  with_spinner(plotlyOutput("audit_plot_hourly", height = "300px")))
-        ),
-        
-        fluidRow(
-          bs4Card(title = "Region uzre mobil aktivlik", width = 6,
-                  with_spinner(plotlyOutput("audit_plot_regions", height = "300px"))),
-          bs4Card(title = "Top istifadeciler (30 gun)", width = 6,
-                  with_spinner(DTOutput("audit_tbl_top_users")))
-        ),
-        
-        fluidRow(
-          bs4Card(title = "Filtrler", width = 12, collapsible = TRUE,
-            fluidRow(
-              column(3, selectInput("audit_flt_source", "Menbe",
-                choices = c("Hamisi"="all","Dashboard"="dashboard",
-                           "Mobile"="mobile","AI Panel"="ai_panel"))),
-              column(3, selectInput("audit_flt_action", "Emeliyyat",
-                choices = c("Hamisi"="all","SELECT","INSERT","UPDATE",
-                           "DELETE","LOGIN","LOGOUT","AI_QUERY"))),
-              column(3, selectInput("audit_flt_user", "Istifadeci", 
-                                    choices = c("Hamisi"="all"))),
-              column(3, br(),
-                actionButton("audit_refresh", "Yenile",
-                             class = "btn-primary", style = "width:100%;"))
-            )
+          bs4Card(title = "💡 AI Cavabı", width = 12,
+            uiOutput("ai_output")
           )
-        ),
-        
-        fluidRow(
-          bs4Card(title = "Butun emeliyyatlar (axir 200)", width = 12,
-                  with_spinner(DTOutput("audit_tbl_log")))
-        ),
-        
-        fluidRow(
-          bs4Card(title = "Son giris tarixcesi", width = 6,
-                  with_spinner(DTOutput("audit_tbl_logins"))),
-          bs4Card(title = "Ugursuz cehdler (30 gun)", width = 6,
-                  with_spinner(DTOutput("audit_tbl_failed")))
         )
       )
     )
@@ -795,6 +803,82 @@ ui <- bs4DashPage(
 # SERVER
 # ═══════════════════════════════════════════════════════════════
 server <- function(input, output, session) {
+  
+  # ═══════════════════════════════════════════════════════════════
+  # 🔐 AUTHENTICATION — Session state
+  # ═══════════════════════════════════════════════════════════════
+  auth <- reactiveValues(
+    logged_in = FALSE,
+    user_id   = NULL,
+    username  = NULL,
+    full_name = NULL,
+    role      = NULL,
+    login_error = NULL
+  )
+  
+  # UI router
+  output$app_ui <- renderUI({
+    if (isTRUE(auth$logged_in)) {
+      main_ui
+    } else {
+      login_ui()
+    }
+  })
+  
+  # Login error göstər
+  output$login_error <- renderUI({
+    if (!is.null(auth$login_error)) {
+      div(class = "login-error", "⚠️ ", auth$login_error)
+    }
+  })
+  
+  # Login cəhdi
+  observeEvent(input$login_submit, {
+    req(input$login_username, input$login_password)
+    
+    conn <- get_connection_info(session)
+    username <- trimws(input$login_username)
+    
+    # Yoxlama
+    result <- authenticate_user(username, input$login_password)
+    
+    if (isTRUE(result$is_valid)) {
+      auth$logged_in <- TRUE
+      auth$user_id   <- result$user_id
+      auth$username  <- result$username
+      auth$full_name <- result$full_name
+      auth$role      <- as.character(result$role)
+      auth$login_error <- NULL
+      
+      # Uğurlu login log
+      dbExecute(pool, 
+        "SELECT audit.log_login($1, 'success', $2::inet, $3, $4, NULL)",
+        params = list(username, conn$ip, conn$user_agent, conn$tailscale))
+      
+      log_query(result$user_id, "LOGIN", "session",
+                query_text = "User login",
+                ip = conn$ip, tailscale = conn$tailscale,
+                user_agent = conn$user_agent)
+      
+      showNotification(paste0("🎉 Xoş gəldiniz, ", result$full_name, "!"),
+                       type = "message", duration = 3)
+    } else {
+      auth$login_error <- result$error_msg
+      
+      # Uğursuz login log
+      dbExecute(pool, 
+        "SELECT audit.log_login($1, 'failed', $2::inet, $3, $4, $5)",
+        params = list(username, conn$ip, conn$user_agent, conn$tailscale,
+                     result$error_msg))
+    }
+  })
+  
+  # Enter key login üçün
+  observeEvent(input$login_password, {
+    # Avtomatik submit olmur, istifadəçi düyməyə basmalıdır
+  })
+  
+
   
   # ═══ REACTIVE DATA (cache) ═══
   kpi_data       <- reactive({ safe_query("SELECT * FROM reporting.mv_kpi") })
@@ -1061,6 +1145,16 @@ server <- function(input, output, session) {
     # API çağırışı (sinxron)
     result <- ask_claude_enhanced(sys, usr, 4000)
     
+    # AI sorğusunu log et
+    conn <- get_connection_info(session)
+    log_query(auth$user_id, "AI_QUERY", "ai_query",
+              query_text = paste("Topic:", topic),
+              source = "ai_panel", 
+              duration_ms = round(result$duration_sec * 1000),
+              ip = conn$ip, tailscale = conn$tailscale, user_agent = conn$user_agent,
+              ai_input = result$input_tokens, ai_output = result$output_tokens,
+              ai_cost = result$cost_usd)
+    
     # Cache-ə at
     ai_cache[[cache_key]] <- result
     
@@ -1104,6 +1198,16 @@ server <- function(input, output, session) {
     
     ai_state$topic <- topic
     result <- ask_claude_enhanced(sys, usr, 4000)
+    
+    # AI sorğusunu log et
+    conn <- get_connection_info(session)
+    log_query(auth$user_id, "AI_QUERY", "ai_query",
+              query_text = paste("Topic:", topic),
+              source = "ai_panel", 
+              duration_ms = round(result$duration_sec * 1000),
+              ip = conn$ip, tailscale = conn$tailscale, user_agent = conn$user_agent,
+              ai_input = result$input_tokens, ai_output = result$output_tokens,
+              ai_cost = result$cost_usd)
     
     # ARXIVƏ YAZ
     archive_result <- save_to_archive(
@@ -1617,175 +1721,73 @@ server <- function(input, output, session) {
     )
   })
 
-    # ═══════════════════════════════════════════════════════════════
-  # AUDIT TAB — Real-time monitoring
-  # ═══════════════════════════════════════════════════════════════
-  
-  audit_refresh_trigger <- reactiveTimer(10000)
-  
-  audit_log_data <- reactive({
-    audit_refresh_trigger()
-    input$audit_refresh
-    
-    sql <- paste0(
-      "SELECT ql.id, ql.username, ql.user_role, ql.action, ql.resource, ",
-      "ql.source, ql.ip_address::TEXT AS ip_address, ql.status, ",
-      "ql.duration_ms, ql.ai_cost_usd, ",
-      "LEFT(ql.query_text, 80) AS query_preview, ",
-      "to_char(ql.created_at, 'YYYY-MM-DD HH24:MI:SS') AS vaxt ",
-      "FROM audit.query_log ql ",
-      "ORDER BY ql.created_at DESC LIMIT 200"
-    )
-    safe_query(sql)
-  })
-  
-  output$audit_kpi_total <- renderbs4ValueBox({
-    n <- safe_query("SELECT COUNT(*) AS n FROM audit.query_log WHERE created_at > NOW() - INTERVAL '30 days'")
-    val <- if (nrow(n) > 0) n$n[1] else 0
-    bs4ValueBox(value = format(val, big.mark = ","), 
-                subtitle = "30 gun cemi",
-                icon = icon("chart-line"), color = "primary")
-  })
-  
-  output$audit_kpi_today <- renderbs4ValueBox({
-    audit_refresh_trigger()
-    n <- safe_query("SELECT COUNT(*) AS n FROM audit.query_log WHERE created_at::date = CURRENT_DATE")
-    val <- if (nrow(n) > 0) n$n[1] else 0
-    bs4ValueBox(value = format(val, big.mark = ","), 
-                subtitle = "Bu gun",
-                icon = icon("calendar-day"), color = "success")
-  })
-  
-  output$audit_kpi_users <- renderbs4ValueBox({
-    audit_refresh_trigger()
-    n <- safe_query("SELECT COUNT(DISTINCT user_id) AS n FROM audit.query_log WHERE created_at > NOW() - INTERVAL '24 hours'")
-    val <- if (nrow(n) > 0) n$n[1] else 0
-    bs4ValueBox(value = val, subtitle = "24 saat aktiv user",
-                icon = icon("users"), color = "info")
-  })
-  
-  output$audit_kpi_mobile <- renderbs4ValueBox({
-    audit_refresh_trigger()
-    n <- safe_query("SELECT COUNT(*) AS n FROM audit.query_log WHERE source = 'mobile' AND created_at > NOW() - INTERVAL '24 hours'")
-    val <- if (nrow(n) > 0) n$n[1] else 0
-    bs4ValueBox(value = val, subtitle = "Mobil (24s)",
-                icon = icon("mobile-screen"), color = "warning")
-  })
-  
-  output$audit_plot_source <- renderPlotly({
-    d <- safe_query("SELECT COALESCE(source, 'unknown') AS source, COUNT(*) AS n FROM audit.query_log WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY source ORDER BY n DESC")
-    if (nrow(d) == 0) return(plotly_empty())
-    plot_ly(d, labels = ~source, values = ~n, type = "pie", hole = 0.4,
-            marker = list(colors = c("#0369a1","#10b981","#f59e0b","#7c3aed","#94a3b8"))) |>
-      layout(margin = list(t=10, b=10), showlegend = TRUE)
-  })
-  
-  output$audit_plot_hourly <- renderPlotly({
-    audit_refresh_trigger()
-    d <- safe_query("SELECT EXTRACT(HOUR FROM created_at)::INT AS hour, COUNT(*) AS n FROM audit.query_log WHERE created_at::date = CURRENT_DATE GROUP BY EXTRACT(HOUR FROM created_at) ORDER BY hour")
-    if (nrow(d) == 0) return(plotly_empty())
-    plot_ly(d, x = ~hour, y = ~n, type = "bar",
-            marker = list(color = "#0369a1")) |>
-      layout(xaxis = list(title = "Saat", dtick = 1),
-             yaxis = list(title = "Sayi"))
-  })
-  
-  output$audit_plot_regions <- renderPlotly({
-    sql <- paste0(
-      "SELECT COALESCE(r.name_az, 'N/A') AS region, COUNT(*) AS n ",
-      "FROM audit.query_log ql ",
-      "LEFT JOIN audit.users u ON ql.user_id = u.id ",
-      "LEFT JOIN geo.regions r ON u.region_id = r.id ",
-      "WHERE ql.source = 'mobile' AND ql.created_at > NOW() - INTERVAL '30 days' ",
-      "GROUP BY r.name_az ORDER BY n DESC LIMIT 15"
-    )
-    d <- safe_query(sql)
-    if (nrow(d) == 0) return(plotly_empty())
-    plot_ly(d, x = ~n, y = ~region, type = "bar", orientation = "h",
-            marker = list(color = "#10b981")) |>
-      layout(xaxis = list(title = "Sayi"), 
-             yaxis = list(title = "", autorange = "reversed"))
-  })
-  
-  output$audit_tbl_top_users <- renderDT({
-    d <- safe_query("SELECT * FROM audit.v_top_users LIMIT 10")
-    if (nrow(d) == 0) return(datatable(data.frame(Mesaj = "Mealumat yoxdur")))
-    datatable(d, options = list(pageLength = 10, dom = "t"), rownames = FALSE)
-  })
-  
-  observe({
-    users <- safe_query("SELECT DISTINCT username FROM audit.users WHERE is_active ORDER BY username")
-    if (nrow(users) > 0) {
-      updateSelectInput(session, "audit_flt_user",
-        choices = c("Hamisi"="all", setNames(users$username, users$username)))
-    }
-  })
-  
-  output$audit_tbl_log <- renderDT({
-    d <- audit_log_data()
-    if (nrow(d) == 0) return(datatable(data.frame(Mesaj = "Log yoxdur")))
-    
-    if (input$audit_flt_source != "all") d <- d[d$source == input$audit_flt_source, ]
-    if (input$audit_flt_action != "all") d <- d[d$action == input$audit_flt_action, ]
-    if (input$audit_flt_user != "all") d <- d[d$username == input$audit_flt_user, ]
-    
-    if (nrow(d) == 0) {
-      return(datatable(data.frame(Mesaj = "Filterlere uygun netice yoxdur")))
-    }
-    
-    show_cols <- c("vaxt","username","user_role","action","resource","source","ip_address","status")
-    
-    datatable(d[, show_cols],
-      options = list(pageLength = 25, scrollX = TRUE, order = list(list(0, "desc"))),
-      rownames = FALSE,
-      colnames = c("Vaxt","User","Rol","Emeliyyat","Resurs","Menbe","IP","Status")) |>
-      formatStyle("status",
-        backgroundColor = styleEqual(
-          c("success","error","denied"),
-          c("#d1fae5","#fee2e2","#fef3c7"))) |>
-      formatStyle("source",
-        backgroundColor = styleEqual(
-          c("dashboard","mobile","ai_panel"),
-          c("#dbeafe","#d1fae5","#ede9fe")))
-  })
-  
-  output$audit_tbl_logins <- renderDT({
-    sql <- paste0(
-      "SELECT username, status, ",
-      "COALESCE(failure_reason, '-') AS reason, ",
-      "COALESCE(ip_address::TEXT, '-') AS ip, ",
-      "to_char(attempted_at, 'MM-DD HH24:MI:SS') AS vaxt ",
-      "FROM audit.login_history ORDER BY attempted_at DESC LIMIT 50"
-    )
-    d <- safe_query(sql)
-    if (nrow(d) == 0) return(datatable(data.frame(Mesaj = "Giris log yoxdur")))
-    datatable(d, options = list(pageLength = 8, scrollX = TRUE), rownames = FALSE,
-              colnames = c("User","Status","Sebeb","IP","Vaxt")) |>
-      formatStyle("status",
-        backgroundColor = styleEqual(
-          c("success","failed","locked"),
-          c("#d1fae5","#fee2e2","#fef3c7")))
-  })
-  
-  output$audit_tbl_failed <- renderDT({
-    sql <- paste0(
-      "SELECT username, COUNT(*) AS cehd, ",
-      "COALESCE(MAX(ip_address::TEXT), '-') AS son_ip, ",
-      "to_char(MAX(attempted_at), 'MM-DD HH24:MI') AS son_cehd ",
-      "FROM audit.login_history ",
-      "WHERE status = 'failed' AND attempted_at > NOW() - INTERVAL '30 days' ",
-      "GROUP BY username ORDER BY COUNT(*) DESC LIMIT 20"
-    )
-    d <- safe_query(sql)
-    if (nrow(d) == 0) {
-      return(datatable(data.frame(Mesaj = "Ugursuz cehd yoxdur")))
-    }
-    datatable(d, options = list(pageLength = 8), rownames = FALSE,
-              colnames = c("User","Cehd sayi","Son IP","Son cehd"))
-  })
-  
   cat("[INFO] Construction app başladı:", session$token, "\n")
-  session$onSessionEnded(function() cat("[INFO] Sessiya bağlandı\n"))
+  session$onSessionEnded(function() {
+    if (!is.null(isolate(auth$user_id))) {
+      tryCatch({
+        conn_ip <- session$request$REMOTE_ADDR %||% "127.0.0.1"
+        log_query(isolate(auth$user_id), "LOGOUT", "session",
+                  query_text = "Session ended", ip = conn_ip)
+      }, error = function(e) NULL)
+    }
+    cat("[INFO] Sessiya bağlandı\n")
+  })
 }
+
+
+# ═══════════════════════════════════════════════════════════════
+# LOGIN UI
+# ═══════════════════════════════════════════════════════════════
+login_ui <- function() {
+  fluidPage(
+    useShinyjs(),
+    tags$head(
+      tags$title("ARTI TTİ — Giriş"),
+      tags$style(HTML("
+        body { margin:0; padding:0; font-family:-apple-system,sans-serif;
+               background:linear-gradient(135deg,#0369a1 0%,#7c3aed 100%);
+               min-height:100vh; display:flex; align-items:center; justify-content:center; }
+        .login-card { background:white; padding:40px; border-radius:20px;
+                      box-shadow:0 20px 60px rgba(0,0,0,0.3); width:100%; max-width:420px; }
+        .login-brand { text-align:center; margin-bottom:30px; }
+        .login-brand .icon { font-size:60px; }
+        .login-brand h1 { margin:10px 0 5px 0; color:#0369a1; font-weight:800; font-size:26px; }
+        .login-brand p { color:#64748b; margin:0; font-size:14px; }
+        .login-card label { font-weight:600; color:#334155; }
+        .login-card .form-control { padding:12px; border-radius:10px; border:1px solid #cbd5e1; font-size:15px; }
+        .login-card .form-control:focus { border-color:#0369a1; box-shadow:0 0 0 3px rgba(3,105,161,0.1); }
+        .login-btn { background:linear-gradient(135deg,#0369a1,#7c3aed); color:white; padding:14px;
+                     width:100%; border:none; border-radius:10px; font-weight:700; font-size:16px;
+                     margin-top:15px; cursor:pointer; transition:transform 0.2s; }
+        .login-btn:hover { transform:translateY(-2px); }
+        .login-error { background:#fee2e2; color:#991b1b; padding:12px; border-radius:8px;
+                       margin-bottom:15px; font-size:14px; }
+        .login-footer { text-align:center; margin-top:20px; color:#94a3b8; font-size:12px; }
+      "))
+    ),
+    div(class = "login-card",
+      div(class = "login-brand",
+        div(class = "icon", "🏗️"),
+        h1("ARTI TTİ"),
+        p("Təmir-Tikinti İdarəsi — Analitik Sistem")
+      ),
+      uiOutput("login_error"),
+      textInput("login_username", "👤 İstifadəçi adı", placeholder = "admin", width = "100%"),
+      passwordInput("login_password", "🔑 Parol", placeholder = "••••••••", width = "100%"),
+      actionButton("login_submit", "🚀 Daxil ol", class = "login-btn"),
+      div(class = "login-footer",
+        HTML("ARTI Universal AI Agent Platform v2.0<br>Tailscale qapalı şəbəkə · Azərbaycan Respublikası")
+      )
+    )
+  )
+}
+
+# ═══════════════════════════════════════════════════════════════
+# UI router — giriş edilib / edilməyib
+# ═══════════════════════════════════════════════════════════════
+ui <- function(request) {
+  uiOutput("app_ui")
+}
+
 
 shinyApp(ui, server)

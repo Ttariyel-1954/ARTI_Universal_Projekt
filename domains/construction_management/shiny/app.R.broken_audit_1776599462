@@ -76,9 +76,6 @@ onStop(function() {
   if (!is.null(pool) && pool$valid) try(poolClose(pool), silent = TRUE)
 })
 
-# ═══ Helper: NULL-safe operator ═══
-`%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || is.na(a)) b else a
-
 # ═══ SAFE QUERY ═══
 safe_query <- function(sql) {
   tryCatch({
@@ -496,7 +493,7 @@ ui <- bs4DashPage(
       bs4SidebarMenuItem("Deadline",          tabName = "deadlines",   icon = icon("stopwatch")),
       bs4SidebarMenuItem("Trendlər",          tabName = "trends",      icon = icon("chart-line")),
       bs4SidebarMenuItem("Claude AI",         tabName = "ai",          icon = icon("wand-magic-sparkles")),
-      bs4SidebarMenuItem("Audit Log",         tabName = "audit",       icon = icon("shield-halved"))
+      bs4SidebarMenuItem("👁️ Audit Log",        tabName = "audit",       icon = icon("shield-halved"))
     )
   ),
   body = bs4DashBody(
@@ -728,14 +725,20 @@ ui <- bs4DashPage(
           )
         ),
         
+        fluidRow(
+          bs4Card(title = "💡 AI Cavabı", width = 12,
+            uiOutput("ai_output")
+          )
+        )
       ),
       
-      # ═══ AUDIT TAB ═══
+      # ═══ 👁️ AUDİT TAB ═══
       bs4TabItem(tabName = "audit",
-        h2("Audit Log — Real-time Monitoring", class = "page-title"),
-        p("Sistemde butun emeliyyatlarin canli izlenmesi", 
+        h2("👁️ Audit Log — Real-time Monitoring", class = "page-title"),
+        p("Sistemdə bütün əməliyyatların canlı izlənməsi", 
           style = "color:#64748b; margin-bottom:20px;"),
         
+        # KPI sırası
         fluidRow(
           bs4ValueBoxOutput("audit_kpi_total", width = 3),
           bs4ValueBoxOutput("audit_kpi_today", width = 3),
@@ -743,47 +746,51 @@ ui <- bs4DashPage(
           bs4ValueBoxOutput("audit_kpi_mobile", width = 3)
         ),
         
+        # Real-time log + statistika
         fluidRow(
-          bs4Card(title = "Aktivlik menbe uzre (son 7 gun)", width = 6,
+          bs4Card(title = "📊 Aktivlik mənbə üzrə (son 7 gün)", width = 6,
                   with_spinner(plotlyOutput("audit_plot_source", height = "300px"))),
-          bs4Card(title = "Saat uzre aktivlik (bu gun)", width = 6,
+          bs4Card(title = "📈 Saat üzrə aktivlik (bu gün)", width = 6,
                   with_spinner(plotlyOutput("audit_plot_hourly", height = "300px")))
         ),
         
         fluidRow(
-          bs4Card(title = "Region uzre mobil aktivlik", width = 6,
+          bs4Card(title = "🌍 Region üzrə mobil aktivlik", width = 6,
                   with_spinner(plotlyOutput("audit_plot_regions", height = "300px"))),
-          bs4Card(title = "Top istifadeciler (30 gun)", width = 6,
+          bs4Card(title = "👥 Top istifadəçilər (30 gün)", width = 6,
                   with_spinner(DTOutput("audit_tbl_top_users")))
         ),
         
+        # FİLTERLƏR
         fluidRow(
-          bs4Card(title = "Filtrler", width = 12, collapsible = TRUE,
+          bs4Card(title = "🔍 Real-time Log Filtri", width = 12, collapsible = TRUE,
             fluidRow(
-              column(3, selectInput("audit_flt_source", "Menbe",
-                choices = c("Hamisi"="all","Dashboard"="dashboard",
+              column(3, selectInput("audit_flt_source", "Mənbə",
+                choices = c("Hamısı"="all","Dashboard"="dashboard",
                            "Mobile"="mobile","AI Panel"="ai_panel"))),
-              column(3, selectInput("audit_flt_action", "Emeliyyat",
-                choices = c("Hamisi"="all","SELECT","INSERT","UPDATE",
+              column(3, selectInput("audit_flt_action", "Əməliyyat",
+                choices = c("Hamısı"="all","SELECT","INSERT","UPDATE",
                            "DELETE","LOGIN","LOGOUT","AI_QUERY"))),
-              column(3, selectInput("audit_flt_user", "Istifadeci", 
-                                    choices = c("Hamisi"="all"))),
-              column(3, br(),
-                actionButton("audit_refresh", "Yenile",
+              column(3, selectInput("audit_flt_user", "İstifadəçi", choices = c("Hamısı"="all"))),
+              column(3, 
+                br(),
+                actionButton("audit_refresh", "🔄 Yenilə",
                              class = "btn-primary", style = "width:100%;"))
             )
           )
         ),
         
+        # ƏSAS LOG CƏDVƏLİ
         fluidRow(
-          bs4Card(title = "Butun emeliyyatlar (axir 200)", width = 12,
+          bs4Card(title = "📋 Bütün əməliyyatlar (axır 200)", width = 12,
                   with_spinner(DTOutput("audit_tbl_log")))
         ),
         
+        # GİRİŞ TARİXÇƏSİ + UĞURSUZ CƏHDLƏR
         fluidRow(
-          bs4Card(title = "Son giris tarixcesi", width = 6,
+          bs4Card(title = "🔑 Son giriş tarixçəsi", width = 6,
                   with_spinner(DTOutput("audit_tbl_logins"))),
-          bs4Card(title = "Ugursuz cehdler (30 gun)", width = 6,
+          bs4Card(title = "🚨 Uğursuz giriş cəhdləri (30 gün)", width = 6,
                   with_spinner(DTOutput("audit_tbl_failed")))
         )
       )
@@ -1618,127 +1625,164 @@ server <- function(input, output, session) {
   })
 
     # ═══════════════════════════════════════════════════════════════
-  # AUDIT TAB — Real-time monitoring
+  # 👁️ AUDIT TAB — Real-time monitoring
   # ═══════════════════════════════════════════════════════════════
   
+  # Auto-refresh timer (hər 10 saniyə)
   audit_refresh_trigger <- reactiveTimer(10000)
   
   audit_log_data <- reactive({
-    audit_refresh_trigger()
+    audit_refresh_trigger()  # auto-refresh
     input$audit_refresh
     
-    sql <- paste0(
-      "SELECT ql.id, ql.username, ql.user_role, ql.action, ql.resource, ",
-      "ql.source, ql.ip_address::TEXT AS ip_address, ql.status, ",
-      "ql.duration_ms, ql.ai_cost_usd, ",
-      "LEFT(ql.query_text, 80) AS query_preview, ",
-      "to_char(ql.created_at, 'YYYY-MM-DD HH24:MI:SS') AS vaxt ",
-      "FROM audit.query_log ql ",
-      "ORDER BY ql.created_at DESC LIMIT 200"
-    )
-    safe_query(sql)
+    safe_query("
+      SELECT 
+        ql.id, ql.username, ql.user_role, ql.action, ql.resource,
+        ql.source, ql.ip_address, ql.status,
+        ql.duration_ms, ql.ai_cost_usd,
+        LEFT(ql.query_text, 80) AS query_preview,
+        to_char(ql.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "Vaxt"
+      FROM audit.query_log ql
+      ORDER BY ql.created_at DESC
+      LIMIT 200
+    ")
   })
   
+  # KPI: Cəmi sorğu (axır 30 gün)
   output$audit_kpi_total <- renderbs4ValueBox({
     n <- safe_query("SELECT COUNT(*) AS n FROM audit.query_log WHERE created_at > NOW() - INTERVAL '30 days'")
-    val <- if (nrow(n) > 0) n$n[1] else 0
-    bs4ValueBox(value = format(val, big.mark = ","), 
-                subtitle = "30 gun cemi",
+    bs4ValueBox(value = format(n$n[1] %||% 0, big.mark = ","), 
+                subtitle = "30 gün cəmi əməliyyat",
                 icon = icon("chart-line"), color = "primary")
   })
   
+  # KPI: Bu gün
   output$audit_kpi_today <- renderbs4ValueBox({
     audit_refresh_trigger()
     n <- safe_query("SELECT COUNT(*) AS n FROM audit.query_log WHERE created_at::date = CURRENT_DATE")
-    val <- if (nrow(n) > 0) n$n[1] else 0
-    bs4ValueBox(value = format(val, big.mark = ","), 
-                subtitle = "Bu gun",
+    bs4ValueBox(value = format(n$n[1] %||% 0, big.mark = ","), 
+                subtitle = "Bu gün əməliyyat",
                 icon = icon("calendar-day"), color = "success")
   })
   
+  # KPI: Aktiv istifadəçilər (axır 24 saat)
   output$audit_kpi_users <- renderbs4ValueBox({
     audit_refresh_trigger()
     n <- safe_query("SELECT COUNT(DISTINCT user_id) AS n FROM audit.query_log WHERE created_at > NOW() - INTERVAL '24 hours'")
-    val <- if (nrow(n) > 0) n$n[1] else 0
-    bs4ValueBox(value = val, subtitle = "24 saat aktiv user",
+    bs4ValueBox(value = n$n[1] %||% 0, subtitle = "24 saat aktiv user",
                 icon = icon("users"), color = "info")
   })
   
+  # KPI: Mobile əməliyyatlar
   output$audit_kpi_mobile <- renderbs4ValueBox({
     audit_refresh_trigger()
     n <- safe_query("SELECT COUNT(*) AS n FROM audit.query_log WHERE source = 'mobile' AND created_at > NOW() - INTERVAL '24 hours'")
-    val <- if (nrow(n) > 0) n$n[1] else 0
-    bs4ValueBox(value = val, subtitle = "Mobil (24s)",
+    bs4ValueBox(value = n$n[1] %||% 0, subtitle = "Mobil əməliyyat (24s)",
                 icon = icon("mobile-screen"), color = "warning")
   })
   
+  # Plot: Mənbə üzrə
   output$audit_plot_source <- renderPlotly({
-    d <- safe_query("SELECT COALESCE(source, 'unknown') AS source, COUNT(*) AS n FROM audit.query_log WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY source ORDER BY n DESC")
+    d <- safe_query("
+      SELECT COALESCE(source, 'unknown') AS source, COUNT(*) AS n
+      FROM audit.query_log 
+      WHERE created_at > NOW() - INTERVAL '7 days'
+      GROUP BY source ORDER BY n DESC
+    ")
     if (nrow(d) == 0) return(plotly_empty())
     plot_ly(d, labels = ~source, values = ~n, type = "pie", hole = 0.4,
             marker = list(colors = c("#0369a1","#10b981","#f59e0b","#7c3aed","#94a3b8"))) |>
       layout(margin = list(t=10, b=10), showlegend = TRUE)
   })
   
+  # Plot: Saat üzrə bu gün
   output$audit_plot_hourly <- renderPlotly({
     audit_refresh_trigger()
-    d <- safe_query("SELECT EXTRACT(HOUR FROM created_at)::INT AS hour, COUNT(*) AS n FROM audit.query_log WHERE created_at::date = CURRENT_DATE GROUP BY EXTRACT(HOUR FROM created_at) ORDER BY hour")
+    d <- safe_query("
+      SELECT EXTRACT(HOUR FROM created_at)::INT AS hour, COUNT(*) AS n
+      FROM audit.query_log 
+      WHERE created_at::date = CURRENT_DATE
+      GROUP BY EXTRACT(HOUR FROM created_at)
+      ORDER BY hour
+    ")
     if (nrow(d) == 0) return(plotly_empty())
     plot_ly(d, x = ~hour, y = ~n, type = "bar",
             marker = list(color = "#0369a1")) |>
       layout(xaxis = list(title = "Saat", dtick = 1),
-             yaxis = list(title = "Sayi"))
+             yaxis = list(title = "Əməliyyat sayı"))
   })
   
+  # Plot: Region üzrə mobil aktivlik
   output$audit_plot_regions <- renderPlotly({
-    sql <- paste0(
-      "SELECT COALESCE(r.name_az, 'N/A') AS region, COUNT(*) AS n ",
-      "FROM audit.query_log ql ",
-      "LEFT JOIN audit.users u ON ql.user_id = u.id ",
-      "LEFT JOIN geo.regions r ON u.region_id = r.id ",
-      "WHERE ql.source = 'mobile' AND ql.created_at > NOW() - INTERVAL '30 days' ",
-      "GROUP BY r.name_az ORDER BY n DESC LIMIT 15"
-    )
-    d <- safe_query(sql)
-    if (nrow(d) == 0) return(plotly_empty())
+    d <- safe_query("
+      SELECT COALESCE(r.name_az, 'N/A') AS region, COUNT(*) AS n
+      FROM audit.query_log ql
+      LEFT JOIN audit.users u ON ql.user_id = u.id
+      LEFT JOIN geo.regions r ON u.region_id = r.id
+      WHERE ql.source = 'mobile' AND ql.created_at > NOW() - INTERVAL '30 days'
+      GROUP BY r.name_az ORDER BY n DESC LIMIT 15
+    ")
+    if (nrow(d) == 0) {
+      return(plotly_empty() |> layout(annotations = list(
+        text = "Mobil aktivlik yoxdur", showarrow = FALSE, x = 0.5, y = 0.5
+      )))
+    }
     plot_ly(d, x = ~n, y = ~region, type = "bar", orientation = "h",
             marker = list(color = "#10b981")) |>
-      layout(xaxis = list(title = "Sayi"), 
+      layout(xaxis = list(title = "Əməliyyat sayı"), 
              yaxis = list(title = "", autorange = "reversed"))
   })
   
+  # Top users
   output$audit_tbl_top_users <- renderDT({
     d <- safe_query("SELECT * FROM audit.v_top_users LIMIT 10")
-    if (nrow(d) == 0) return(datatable(data.frame(Mesaj = "Mealumat yoxdur")))
-    datatable(d, options = list(pageLength = 10, dom = "t"), rownames = FALSE)
+    datatable(d, options = list(pageLength = 10, dom = "t"), rownames = FALSE,
+              colnames = c("İstifadəçi","Rol","Sorğu sayı","Aktiv gün","Son sorğu"))
   })
   
+  # User filter
   observe({
     users <- safe_query("SELECT DISTINCT username FROM audit.users WHERE is_active ORDER BY username")
     if (nrow(users) > 0) {
       updateSelectInput(session, "audit_flt_user",
-        choices = c("Hamisi"="all", setNames(users$username, users$username)))
+        choices = c("Hamısı"="all", setNames(users$username, users$username)))
     }
   })
   
+  # ƏSAS LOG CƏDVƏLİ (filterlərlə)
   output$audit_tbl_log <- renderDT({
     d <- audit_log_data()
     if (nrow(d) == 0) return(datatable(data.frame(Mesaj = "Log yoxdur")))
     
+    # Filterlər
     if (input$audit_flt_source != "all") d <- d[d$source == input$audit_flt_source, ]
     if (input$audit_flt_action != "all") d <- d[d$action == input$audit_flt_action, ]
     if (input$audit_flt_user != "all") d <- d[d$username == input$audit_flt_user, ]
     
     if (nrow(d) == 0) {
-      return(datatable(data.frame(Mesaj = "Filterlere uygun netice yoxdur")))
+      return(datatable(data.frame(Mesaj = "Filtrlərə uyğun nəticə yoxdur")))
     }
     
-    show_cols <- c("vaxt","username","user_role","action","resource","source","ip_address","status")
+    # Action label
+    d$action_label <- sapply(d$action, function(a) {
+      switch(a,
+        "AI_QUERY" = "🤖 AI",
+        "SELECT"   = "👁️ Oxu",
+        "INSERT"   = "➕ Əlavə",
+        "UPDATE"   = "✏️ Dəyiş",
+        "DELETE"   = "🗑️ Sil",
+        "LOGIN"    = "🔑 Giriş",
+        "LOGOUT"   = "🚪 Çıxış",
+        "EXPORT"   = "📤 Eksport",
+        a)
+    })
+    
+    show_cols <- c("Vaxt","username","user_role","action_label","resource","source","ip_address","status")
     
     datatable(d[, show_cols],
       options = list(pageLength = 25, scrollX = TRUE, order = list(list(0, "desc"))),
       rownames = FALSE,
-      colnames = c("Vaxt","User","Rol","Emeliyyat","Resurs","Menbe","IP","Status")) |>
+      colnames = c("Vaxt","User","Rol","Əməliyyat","Resurs","Mənbə","IP","Status")) |>
       formatStyle("status",
         backgroundColor = styleEqual(
           c("success","error","denied"),
@@ -1749,42 +1793,45 @@ server <- function(input, output, session) {
           c("#dbeafe","#d1fae5","#ede9fe")))
   })
   
+  # Login tarixçəsi
   output$audit_tbl_logins <- renderDT({
-    sql <- paste0(
-      "SELECT username, status, ",
-      "COALESCE(failure_reason, '-') AS reason, ",
-      "COALESCE(ip_address::TEXT, '-') AS ip, ",
-      "to_char(attempted_at, 'MM-DD HH24:MI:SS') AS vaxt ",
-      "FROM audit.login_history ORDER BY attempted_at DESC LIMIT 50"
-    )
-    d <- safe_query(sql)
-    if (nrow(d) == 0) return(datatable(data.frame(Mesaj = "Giris log yoxdur")))
-    datatable(d, options = list(pageLength = 8, scrollX = TRUE), rownames = FALSE,
-              colnames = c("User","Status","Sebeb","IP","Vaxt")) |>
-      formatStyle("status",
+    d <- safe_query("
+      SELECT 
+        username AS "User",
+        status AS "Status",
+        COALESCE(failure_reason, '-') AS "Səbəb",
+        COALESCE(ip_address::TEXT, '-') AS "IP",
+        to_char(attempted_at, 'MM-DD HH24:MI:SS') AS "Vaxt"
+      FROM audit.login_history
+      ORDER BY attempted_at DESC LIMIT 50
+    ")
+    datatable(d, options = list(pageLength = 8, scrollX = TRUE), rownames = FALSE) |>
+      formatStyle("Status",
         backgroundColor = styleEqual(
           c("success","failed","locked"),
           c("#d1fae5","#fee2e2","#fef3c7")))
   })
   
+  # Uğursuz cəhdlər
   output$audit_tbl_failed <- renderDT({
-    sql <- paste0(
-      "SELECT username, COUNT(*) AS cehd, ",
-      "COALESCE(MAX(ip_address::TEXT), '-') AS son_ip, ",
-      "to_char(MAX(attempted_at), 'MM-DD HH24:MI') AS son_cehd ",
-      "FROM audit.login_history ",
-      "WHERE status = 'failed' AND attempted_at > NOW() - INTERVAL '30 days' ",
-      "GROUP BY username ORDER BY COUNT(*) DESC LIMIT 20"
-    )
-    d <- safe_query(sql)
+    d <- safe_query("
+      SELECT 
+        username AS "User",
+        COUNT(*) AS "Cəhd sayı",
+        COALESCE(MAX(ip_address::TEXT), '-') AS "Son IP",
+        to_char(MAX(attempted_at), 'MM-DD HH24:MI') AS "Son cəhd"
+      FROM audit.login_history
+      WHERE status = 'failed' AND attempted_at > NOW() - INTERVAL '30 days'
+      GROUP BY username
+      ORDER BY COUNT(*) DESC LIMIT 20
+    ")
     if (nrow(d) == 0) {
-      return(datatable(data.frame(Mesaj = "Ugursuz cehd yoxdur")))
+      return(datatable(data.frame(Mesaj = "✅ Uğursuz cəhd yoxdur")))
     }
-    datatable(d, options = list(pageLength = 8), rownames = FALSE,
-              colnames = c("User","Cehd sayi","Son IP","Son cehd"))
+    datatable(d, options = list(pageLength = 8), rownames = FALSE)
   })
   
-  cat("[INFO] Construction app başladı:", session$token, "\n")
+cat("[INFO] Construction app başladı:", session$token, "\n")
   session$onSessionEnded(function() cat("[INFO] Sessiya bağlandı\n"))
 }
 
