@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dərs 1 Əlavə — Təmir-Tikinti İdarəsi üçün Enterprise Verilənlər Bazası</title>
+<style>
+  :root {
+    --primary: #0369a1; --primary-dark: #0c4a6e; --primary-light: #dbeafe;
+    --accent: #7c3aed; --accent-light: #ede9fe;
+    --success: #059669; --success-light: #d1fae5;
+    --warning: #d97706; --warning-light: #fef3c7;
+    --danger: #dc2626; --danger-light: #fee2e2;
+    --text: #0f172a; --text-muted: #475569; --text-subtle: #64748b;
+    --bg: #fafbfc; --surface: #ffffff; --surface-alt: #f8fafc;
+    --border: #e2e8f0; --border-strong: #cbd5e1;
+    --code-bg: #0f172a; --code-text: #e2e8f0;
+    --code-comment: #64748b; --code-keyword: #c4b5fd; --code-string: #86efac;
+    --code-number: #fcd34d; --code-function: #93c5fd; --code-type: #f9a8d4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .hero { background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #7c3aed 100%); color: white; padding: 3.5rem 2.5rem; border-radius: 20px; margin-bottom: 2.5rem; box-shadow: 0 20px 50px -15px rgba(3, 105, 161, 0.4); position: relative; overflow: hidden; }
+  .hero::before { content: '🏗️'; position: absolute; top: -30px; right: -10px; font-size: 280px; opacity: 0.08; pointer-events: none; }
+  .hero-label { display: inline-block; background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(10px); padding: 0.5rem 1.25rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 1.25rem; border: 1px solid rgba(255, 255, 255, 0.25); position: relative; z-index: 1; }
+  .hero h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.25; margin-bottom: 1rem; letter-spacing: -0.02em; position: relative; z-index: 1; }
+  .hero-subtitle { font-size: 1.08rem; opacity: 0.94; max-width: 780px; line-height: 1.65; position: relative; z-index: 1; }
+  .hero-meta { display: flex; gap: 1.25rem; margin-top: 1.5rem; flex-wrap: wrap; position: relative; z-index: 1; }
+  .hero-meta-item { display: flex; align-items: center; gap: 0.45rem; font-size: 0.88rem; opacity: 0.9; }
+
+  .objectives { background: var(--primary-light); border-left: 5px solid var(--primary); padding: 1.75rem 2rem; border-radius: 12px; margin-bottom: 2.5rem; }
+  .objectives h3 { color: var(--primary-dark); font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; }
+  .objectives ul { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.7rem 1.5rem; }
+  .objectives li { padding-left: 1.75rem; position: relative; font-size: 0.92rem; }
+  .objectives li::before { content: '✓'; position: absolute; left: 0; color: var(--primary); font-weight: 800; font-size: 1.1rem; }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .toc h3 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-subtle); margin-bottom: 1rem; }
+  .toc ol { list-style: none; counter-reset: toc-counter; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.45rem 1rem; }
+  .toc li { counter-increment: toc-counter; }
+  .toc a { color: var(--text); text-decoration: none; padding: 0.5rem 0; display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.9rem; transition: color 0.15s; }
+  .toc a::before { content: counter(toc-counter, decimal-leading-zero); color: var(--primary); font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .toc a:hover { color: var(--primary); }
+
+  section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem 2.25rem; margin-bottom: 1.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+  section h2 { font-size: 1.55rem; font-weight: 750; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 0.75rem; letter-spacing: -0.015em; }
+  section h2 .num { background: var(--primary); color: white; width: 36px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  section h3 { font-size: 1.15rem; font-weight: 700; margin: 1.5rem 0 0.75rem; letter-spacing: -0.01em; color: var(--primary-dark); }
+  section h4 { font-size: 1rem; font-weight: 650; margin: 1.1rem 0 0.5rem; color: var(--text); }
+  section p { margin-bottom: 0.85rem; }
+  section p.lead { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+  section ul, section ol { margin: 0.6rem 0 1.1rem 1.4rem; }
+  section li { margin-bottom: 0.35rem; font-size: 0.94rem; }
+  section strong { color: var(--primary-dark); font-weight: 650; }
+
+  .code-block { background: var(--code-bg); border-radius: 12px; margin: 1rem 0 0.5rem; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .code-header { background: #1e293b; padding: 0.55rem 1.1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .code-title { color: #94a3b8; font-size: 0.76rem; font-weight: 600; font-family: ui-monospace, 'SF Mono', Menlo, monospace; display: flex; align-items: center; gap: 0.5rem; }
+  .code-title::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #22c55e; display: inline-block; }
+  .code-title.sql::before { background: #336791; }
+  .code-title.bash::before { background: #f59e0b; }
+  .code-copy { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; padding: 0.3rem 0.75rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .code-copy:hover { background: rgba(255,255,255,0.15); color: white; }
+  .code-copy.copied { background: var(--success); color: white; }
+  pre.code-content { padding: 1.15rem 1.3rem; overflow-x: auto; color: var(--code-text); font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 0.84rem; line-height: 1.6; }
+  .cmt { color: var(--code-comment); font-style: italic; }
+  .kw { color: var(--code-keyword); font-weight: 600; }
+  .str { color: var(--code-string); }
+  .num { color: var(--code-number); }
+  .fn { color: var(--code-function); }
+  .typ { color: var(--code-type); }
+
+  code.inline { background: var(--surface-alt); color: var(--primary-dark); padding: 0.15rem 0.4rem; border-radius: 5px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.88em; border: 1px solid var(--border); }
+
+  .callout { border-radius: 12px; padding: 1.1rem 1.4rem; margin: 1.25rem 0; border-left: 4px solid; display: flex; gap: 0.9rem; align-items: flex-start; }
+  .callout-icon { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.82rem; }
+  .callout-content { flex: 1; }
+  .callout-title { font-weight: 700; margin-bottom: 0.3rem; font-size: 0.92rem; }
+  .callout-body { font-size: 0.9rem; }
+  .callout-body p:last-child { margin-bottom: 0; }
+  .callout.info { background: var(--primary-light); border-color: var(--primary); }
+  .callout.info .callout-icon { background: var(--primary); }
+  .callout.info .callout-title { color: var(--primary-dark); }
+  .callout.warning { background: var(--warning-light); border-color: var(--warning); }
+  .callout.warning .callout-icon { background: var(--warning); }
+  .callout.warning .callout-title { color: #92400e; }
+  .callout.success { background: var(--success-light); border-color: var(--success); }
+  .callout.success .callout-icon { background: var(--success); }
+  .callout.success .callout-title { color: #065f46; }
+  .callout.tip { background: var(--accent-light); border-color: var(--accent); }
+  .callout.tip .callout-icon { background: var(--accent); }
+  .callout.tip .callout-title { color: #5b21b6; }
+
+  .table-wrap { overflow-x: auto; margin: 1.1rem 0; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  table thead { background: var(--surface-alt); }
+  table th { padding: 0.7rem 0.9rem; text-align: left; font-weight: 650; border-bottom: 2px solid var(--border-strong); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+  table td { padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table tbody tr:last-child td { border-bottom: none; }
+  table tbody tr:hover { background: var(--surface-alt); }
+  table td code { background: var(--surface-alt); padding: 0.1rem 0.35rem; border-radius: 4px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.85em; color: var(--primary-dark); border: 1px solid var(--border); }
+
+  .pill { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-right: 0.3rem; }
+  .pill.pk { background: #fef3c7; color: #92400e; }
+  .pill.fk { background: #dbeafe; color: #1e40af; }
+  .pill.idx { background: #d1fae5; color: #065f46; }
+  .pill.uniq { background: #ede9fe; color: #5b21b6; }
+  .pill.nn { background: #fee2e2; color: #991b1b; }
+  .pill.chk { background: #fff7ed; color: #c2410c; }
+  .pill.def { background: #f1f5f9; color: #475569; }
+
+  .erd-wrap { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin: 1.25rem 0; overflow-x: auto; }
+  .erd-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .diagram-caption { margin-top: 0.7rem; font-size: 0.82rem; color: var(--text-subtle); font-style: italic; text-align: center; }
+
+  .schema-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .schema-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; transition: all 0.2s; }
+  .schema-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-color: var(--primary); transform: translateY(-2px); }
+  .schema-card h4 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .schema-card .count { display: inline-block; background: var(--primary-light); color: var(--primary-dark); padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .schema-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+  .schema-card .tables { font-size: 0.78rem; color: var(--text-subtle); font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+
+  .table-card { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem 1.75rem; margin: 1.5rem 0; }
+  .table-card h4 { font-size: 1.1rem; color: var(--primary-dark); margin: 0 0 0.3rem 0; display: flex; align-items: center; gap: 0.5rem; }
+  .table-card .purpose { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; font-style: italic; }
+
+  @media (max-width: 720px) {
+    .container { padding: 1rem; }
+    .hero { padding: 2rem 1.5rem; }
+    .hero h1 { font-size: 1.6rem; }
+    section { padding: 1.25rem 1rem; }
+    section h2 { font-size: 1.25rem; }
+    pre.code-content { font-size: 0.76rem; padding: 0.9rem; }
+    table { font-size: 0.78rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <span class="hero-label">🏗️ DƏRS 1 ƏLAVƏ · YENİ DOMEN</span>
+  <h1>Təmir-Tikinti İdarəsi (TTİ) üçün Enterprise Verilənlər Bazası</h1>
+  <p class="hero-subtitle">Azərbaycan Respublikası Təhsil Nazirliyinin tabeliyində olan TTİ-nin bütün fəaliyyət sahələrini əhatə edən 35 cədvəl, 7 schema, 77 rayon, 120+ layihə və minlərlə əməliyyatdan ibarət tam real-world verilənlər bazasının memarlığı. Universal AI Agent konseptinin bariz nümayişi — eyni Backend/Frontend, yeni domen.</p>
+  <div class="hero-meta">
+    <span class="hero-meta-item">🗂️ 7 schema</span>
+    <span class="hero-meta-item">📊 35 cədvəl</span>
+    <span class="hero-meta-item">🔗 80+ foreign key</span>
+    <span class="hero-meta-item">⚡ 15 materialized view</span>
+    <span class="hero-meta-item">📍 77 rayon</span>
+    <span class="hero-meta-item">🏗️ 120+ layihə</span>
+  </div>
+</div>
+
+<div class="objectives">
+  <h3>🎯 Bu Dərsdə Siz Nələr Öyrənəcəksiniz?</h3>
+  <ul>
+    <li>Enterprise-səviyyəli DB arxitekturasını qurmaq</li>
+    <li>7 domen schema-sının məntiqi bölgüsü</li>
+    <li>Hər sütunun növü, vahidi, məhdudiyyəti</li>
+    <li>35 cədvəl üçün foreign key şəbəkəsi</li>
+    <li>Performance indekslər və partition stratejisi</li>
+    <li>Trigger-lər və avtomatik audit log</li>
+    <li>15+ reporting və materialized view</li>
+    <li>Real Azərbaycan data-sı ilə modeli test</li>
+    <li>Universal AI Agent konseptinin nümayişi</li>
+  </ul>
+</div>
+
+<nav class="toc">
+  <h3>Dərsin Bölmələri</h3>
+  <ol>
+    <li><a href="#b1">Giriş və domen analizi</a></li>
+    <li><a href="#b2">Universal AI Agent konseptinin izahı</a></li>
+    <li><a href="#b3">Arxitektura və ERD</a></li>
+    <li><a href="#b4">7 Schema-nın strukturu</a></li>
+    <li><a href="#b5">geo schema — coğrafi data</a></li>
+    <li><a href="#b6">infra schema — infrastruktur</a></li>
+    <li><a href="#b7">construction schema — layihələr</a></li>
+    <li><a href="#b8">finance schema — maliyyə</a></li>
+    <li><a href="#b9">inventory schema — MTB</a></li>
+    <li><a href="#b10">hr schema — işçi heyət</a></li>
+    <li><a href="#b11">audit schema — log və izləmə</a></li>
+    <li><a href="#b12">İndekslər və performans</a></li>
+    <li><a href="#b13">Trigger-lər və constraint-lər</a></li>
+    <li><a href="#b14">Reporting view-lar</a></li>
+    <li><a href="#b15">Materialized view-lar</a></li>
+    <li><a href="#b16">Data həcmi planı</a></li>
+    <li><a href="#b17">Schema tətbiqi</a></li>
+    <li><a href="#b18">Növbəti addım — app.R</a></li>
+  </ol>
+</nav>
+
+<section id="b1">
+  <h2><span class="num">1</span> Giriş və domen analizi</h2>
+  <p class="lead">Təmir-Tikinti İdarəsi (TTİ) — Azərbaycan Respublikası Təhsil Nazirliyi tabeliyində fəaliyyət göstərən idarədir. Əsas funksiyası: ölkə üzrə <strong>bütün məktəb, lisey və gimnaziyaların</strong> tikinti-təmir işlərini planlaşdırmaq, icra etmək və monitorinq aparmaqdır.</p>
+
+  <h3>1.1. TTİ-nin əsas fəaliyyət sahələri</h3>
+  <ul>
+    <li><strong>📍 Regional infrastruktur</strong> — 77 rayon, 4,500+ məktəb</li>
+    <li><strong>🏗️ Layihə idarəetməsi</strong> — kapital təmir, əsaslı tikinti, cari təmir</li>
+    <li><strong>💰 Büdcə və maliyyə</strong> — illik 300+ milyon AZN büdcə</li>
+    <li><strong>📦 Maddi-texniki baza</strong> — 15+ anbar, binlərlə material növü</li>
+    <li><strong>👷 İşçi heyət</strong> — 500+ daxili işçi, 50+ podratçı şirkət</li>
+    <li><strong>📋 İcra monitorinqi</strong> — aktlar, inspeksiyalar, kvartal hesabatları</li>
+  </ul>
+
+  <h3>1.2. İdarəetmə çətinlikləri</h3>
+  <div class="callout warning">
+    <span class="callout-icon">!</span>
+    <div class="callout-content">
+      <div class="callout-title">Real problemlər</div>
+      <div class="callout-body">
+        <ul style="margin:0;">
+          <li>77 rayondan eyni anda 120+ layihənin koordinasiyası</li>
+          <li>Büdcə icra faizi və xərclərin real-time monitorinqi</li>
+          <li>Materialların anbardan layihəyə paylanması</li>
+          <li>Podratçı şirkətlərin performans qiymətləndirilməsi</li>
+          <li>Aktların, imzaların, qəbulların izlənməsi</li>
+          <li>Vətəndaş müraciətlərinin və şikayətlərin cavablandırılması</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3>1.3. Verilənlər bazası niyə lazımdır?</h3>
+  <p>Əvvəllər bütün bu məlumatlar <strong>Excel cədvəllərində, kağız üzərində</strong> saxlanılırdı. Enterprise DB qurmaqla əldə ediləcəklər:</p>
+  <ul>
+    <li>Bir sorğuda 77 rayon üzrə tam mənzərə</li>
+    <li>Real-time büdcə və icra statistikası</li>
+    <li>Avtomatik hesabat generasiyası</li>
+    <li>AI-əsaslı təhlil və proqnoz</li>
+    <li>Tarixi data saxlanması və trend analizi</li>
+    <li>Müxtəlif rollara (direktor, inspektor, mühasib) uyğun interfeys</li>
+  </ul>
+</section>
+
+<section id="b2">
+  <h2><span class="num">2</span> Universal AI Agent konseptinin izahı</h2>
+  <p class="lead">Bu dərs <strong>tətbiqdə demonstrasiyadır</strong> — "Universal AI Agent" memarlığının gücünü sübut edir. Əvvəlki dərslərdə arti_schools bazası üçün qurduğumuz sistem indi yalnız <strong>DB və domain logic</strong> dəyişdirilərək tamamilə yeni sahə üçün işə salınacaq.</p>
+
+  <h3>2.1. Nə dəyişir, nə dəyişmir?</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Komponent</th>
+          <th>Dəyişir / Dəyişmir?</th>
+          <th>Niyə?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>🗄️ PostgreSQL schema</strong></td>
+          <td style="color: var(--danger); font-weight: 600;">✨ Tamamilə yeni</td>
+          <td>Yeni domen = yeni cədvəllər</td>
+        </tr>
+        <tr>
+          <td><strong>⬢ Backend (Node.js)</strong></td>
+          <td style="color: var(--success); font-weight: 600;">🔄 Əsasən invariant</td>
+          <td>Auth, middleware, DB pool eyni. Yalnız yeni <code>routes/construction/</code> qovluğu əlavə olunur</td>
+        </tr>
+        <tr>
+          <td><strong>⚛ Frontend (React)</strong></td>
+          <td style="color: var(--success); font-weight: 600;">🔄 Əsasən invariant</td>
+          <td>Component library, auth, layout eyni. Yalnız yeni page-lər və form-lar əlavə olunur</td>
+        </tr>
+        <tr>
+          <td><strong>📊 R Shiny app</strong></td>
+          <td style="color: var(--warning); font-weight: 600;">🎨 Yeni view-lar, struktur eyni</td>
+          <td>bs4Dash skelet, safe_query, Claude inteqrasiyası eyni</td>
+        </tr>
+        <tr>
+          <td><strong>🤖 Claude AI prompt-ları</strong></td>
+          <td style="color: var(--warning); font-weight: 600;">✏️ Yeni system prompt</td>
+          <td>Fərqli domen bilikləri üçün</td>
+        </tr>
+        <tr>
+          <td><strong>🎨 Dizayn sistem</strong></td>
+          <td style="color: var(--success); font-weight: 600;">✅ Tam eyni</td>
+          <td>Tailwind, rənglər, komponentlər</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>2.2. Müqayisə: arti_schools vs arti_construction</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Aspekt</th>
+          <th>arti_schools (əvvəl)</th>
+          <th>arti_construction (indi)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Miqyas</td><td>2 məktəb, 108 şagird</td><td><strong>77 rayon, 4,500+ məktəb</strong></td></tr>
+        <tr><td>Layihə sayı</td><td>—</td><td><strong>120+ aktiv layihə</strong></td></tr>
+        <tr><td>Schema sayı</td><td>2</td><td><strong>7</strong></td></tr>
+        <tr><td>Cədvəl sayı</td><td>13</td><td><strong>35</strong></td></tr>
+        <tr><td>Reporting view</td><td>10</td><td><strong>15+</strong></td></tr>
+        <tr><td>Materialized view</td><td>9</td><td><strong>12-15</strong></td></tr>
+        <tr><td>FK əlaqələr</td><td>~20</td><td><strong>~80</strong></td></tr>
+        <tr><td>Əsas biznes sualları</td><td>Şagird qiyməti, davamiyyət</td><td>Büdcə icrası, müddət, xərc, inspeksiya, MTB</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="b3">
+  <h2><span class="num">3</span> Arxitektura və ERD diaqramı</h2>
+  <p class="lead">Aşağıdakı diaqram bütün 7 schema-nın və onların əsas cədvəllərinin bir-birinə olan əlaqələrini göstərir.</p>
+
+  <div class="erd-wrap">
+    <svg viewBox="0 0 960 680" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g1" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fef3c7"/>
+          <stop offset="100%" stop-color="#fde68a"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#dbeafe"/>
+          <stop offset="100%" stop-color="#bfdbfe"/>
+        </linearGradient>
+        <linearGradient id="g3" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#d1fae5"/>
+          <stop offset="100%" stop-color="#a7f3d0"/>
+        </linearGradient>
+        <linearGradient id="g4" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ede9fe"/>
+          <stop offset="100%" stop-color="#ddd6fe"/>
+        </linearGradient>
+        <linearGradient id="g5" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fee2e2"/>
+          <stop offset="100%" stop-color="#fecaca"/>
+        </linearGradient>
+        <linearGradient id="g6" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fce7f3"/>
+          <stop offset="100%" stop-color="#fbcfe8"/>
+        </linearGradient>
+        <linearGradient id="g7" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#f1f5f9"/>
+          <stop offset="100%" stop-color="#e2e8f0"/>
+        </linearGradient>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 z" fill="#64748b"/>
+        </marker>
+      </defs>
+
+      <!-- geo -->
+      <rect x="40" y="30" width="200" height="140" rx="12" fill="url(#g1)" stroke="#d97706" stroke-width="2"/>
+      <text x="140" y="55" text-anchor="middle" font-size="14" font-weight="700" fill="#92400e">📍 geo</text>
+      <text x="50" y="80" font-size="11" fill="#78350f">• regions (77)</text>
+      <text x="50" y="98" font-size="11" fill="#78350f">• region_types</text>
+      <text x="50" y="116" font-size="11" fill="#78350f">• settlements</text>
+      <text x="50" y="134" font-size="11" fill="#78350f">• zones</text>
+      <text x="50" y="152" font-size="11" fill="#78350f">• coordinates</text>
+
+      <!-- infra -->
+      <rect x="280" y="30" width="220" height="160" rx="12" fill="url(#g2)" stroke="#0369a1" stroke-width="2"/>
+      <text x="390" y="55" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">🏫 infra</text>
+      <text x="290" y="80" font-size="11" fill="#1e3a8a">• schools (4,500+)</text>
+      <text x="290" y="98" font-size="11" fill="#1e3a8a">• school_types</text>
+      <text x="290" y="116" font-size="11" fill="#1e3a8a">• buildings</text>
+      <text x="290" y="134" font-size="11" fill="#1e3a8a">• building_sections</text>
+      <text x="290" y="152" font-size="11" fill="#1e3a8a">• condition_assessments</text>
+      <text x="290" y="170" font-size="11" fill="#1e3a8a">• utilities</text>
+
+      <!-- construction (mərkəzi) -->
+      <rect x="540" y="30" width="380" height="260" rx="12" fill="url(#g3)" stroke="#059669" stroke-width="3"/>
+      <text x="730" y="55" text-anchor="middle" font-size="16" font-weight="700" fill="#065f46">🏗️ construction (mərkəz)</text>
+      <text x="550" y="85" font-size="12" fill="#065f46" font-weight="600">• projects (120+)</text>
+      <text x="550" y="103" font-size="11" fill="#065f46">• project_types (cari, kapital, əsaslı)</text>
+      <text x="550" y="121" font-size="11" fill="#065f46">• project_phases</text>
+      <text x="550" y="139" font-size="11" fill="#065f46">• project_tasks</text>
+      <text x="550" y="157" font-size="11" fill="#065f46">• project_milestones</text>
+      <text x="550" y="175" font-size="11" fill="#065f46">• work_orders</text>
+      <text x="550" y="193" font-size="11" fill="#065f46">• inspections</text>
+      <text x="550" y="211" font-size="11" fill="#065f46">• acts (qəbul aktları)</text>
+      <text x="550" y="229" font-size="11" fill="#065f46">• citizen_complaints</text>
+      <text x="550" y="247" font-size="11" fill="#065f46">• progress_reports</text>
+      <text x="550" y="265" font-size="11" fill="#065f46">• project_documents</text>
+
+      <!-- finance -->
+      <rect x="40" y="200" width="220" height="160" rx="12" fill="url(#g4)" stroke="#7c3aed" stroke-width="2"/>
+      <text x="150" y="225" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">💰 finance</text>
+      <text x="50" y="250" font-size="11" fill="#5b21b6">• budgets</text>
+      <text x="50" y="268" font-size="11" fill="#5b21b6">• budget_lines</text>
+      <text x="50" y="286" font-size="11" fill="#5b21b6">• expenses</text>
+      <text x="50" y="304" font-size="11" fill="#5b21b6">• payments</text>
+      <text x="50" y="322" font-size="11" fill="#5b21b6">• invoices</text>
+      <text x="50" y="340" font-size="11" fill="#5b21b6">• financial_reports</text>
+
+      <!-- inventory -->
+      <rect x="280" y="220" width="220" height="160" rx="12" fill="url(#g5)" stroke="#dc2626" stroke-width="2"/>
+      <text x="390" y="245" text-anchor="middle" font-size="14" font-weight="700" fill="#991b1b">📦 inventory</text>
+      <text x="290" y="270" font-size="11" fill="#991b1b">• materials (200+)</text>
+      <text x="290" y="288" font-size="11" fill="#991b1b">• material_categories</text>
+      <text x="290" y="306" font-size="11" fill="#991b1b">• warehouses (15)</text>
+      <text x="290" y="324" font-size="11" fill="#991b1b">• stock_levels</text>
+      <text x="290" y="342" font-size="11" fill="#991b1b">• material_transactions</text>
+      <text x="290" y="360" font-size="11" fill="#991b1b">• equipment</text>
+
+      <!-- hr -->
+      <rect x="540" y="320" width="220" height="180" rx="12" fill="url(#g6)" stroke="#db2777" stroke-width="2"/>
+      <text x="650" y="345" text-anchor="middle" font-size="14" font-weight="700" fill="#9f1239">👷 hr</text>
+      <text x="550" y="370" font-size="11" fill="#9f1239">• employees (500+)</text>
+      <text x="550" y="388" font-size="11" fill="#9f1239">• positions</text>
+      <text x="550" y="406" font-size="11" fill="#9f1239">• departments</text>
+      <text x="550" y="424" font-size="11" fill="#9f1239">• teams / brigades</text>
+      <text x="550" y="442" font-size="11" fill="#9f1239">• contractors (50+)</text>
+      <text x="550" y="460" font-size="11" fill="#9f1239">• contractor_contracts</text>
+      <text x="550" y="478" font-size="11" fill="#9f1239">• performance_reviews</text>
+
+      <!-- audit -->
+      <rect x="780" y="320" width="160" height="180" rx="12" fill="url(#g7)" stroke="#64748b" stroke-width="2"/>
+      <text x="860" y="345" text-anchor="middle" font-size="14" font-weight="700" fill="#334155">📋 audit</text>
+      <text x="790" y="370" font-size="11" fill="#334155">• activity_log</text>
+      <text x="790" y="388" font-size="11" fill="#334155">• change_history</text>
+      <text x="790" y="406" font-size="11" fill="#334155">• user_sessions</text>
+      <text x="790" y="424" font-size="11" fill="#334155">• system_settings</text>
+      <text x="790" y="442" font-size="11" fill="#334155">• notifications</text>
+
+      <!-- reporting -->
+      <rect x="40" y="540" width="880" height="110" rx="12" fill="#f0fdf4" stroke="#059669" stroke-width="2" stroke-dasharray="6"/>
+      <text x="480" y="565" text-anchor="middle" font-size="14" font-weight="700" fill="#065f46">📊 reporting (view-lar və materialized view-lar)</text>
+      <text x="60" y="590" font-size="10" fill="#065f46">• v_regional_overview</text>
+      <text x="260" y="590" font-size="10" fill="#065f46">• v_project_status</text>
+      <text x="440" y="590" font-size="10" fill="#065f46">• v_budget_tracking</text>
+      <text x="620" y="590" font-size="10" fill="#065f46">• v_contractor_performance</text>
+      <text x="60" y="608" font-size="10" fill="#065f46">• v_material_flow</text>
+      <text x="260" y="608" font-size="10" fill="#065f46">• v_deadline_monitoring</text>
+      <text x="440" y="608" font-size="10" fill="#065f46">• v_inspection_summary</text>
+      <text x="620" y="608" font-size="10" fill="#065f46">• v_complaint_analysis</text>
+      <text x="60" y="626" font-size="10" fill="#065f46">• mv_kpi_dashboard</text>
+      <text x="260" y="626" font-size="10" fill="#065f46">• mv_monthly_progress</text>
+      <text x="440" y="626" font-size="10" fill="#065f46">• mv_region_ranking</text>
+      <text x="620" y="626" font-size="10" fill="#065f46">• mv_top_projects</text>
+
+      <!-- Əsas əlaqə xətləri -->
+      <line x1="240" y1="100" x2="280" y2="100" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="500" y1="100" x2="540" y2="130" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="390" y1="190" x2="620" y2="130" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="260" y1="280" x2="540" y2="200" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="500" y1="300" x2="560" y2="260" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <line x1="650" y1="320" x2="700" y2="290" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    </svg>
+    <p class="diagram-caption">Şəkil 1. arti_construction bazasının yüksək səviyyəli arxitekturası. Bütün domain cədvəlləri construction schema-sına (mərkəzi) fokuslanır.</p>
+  </div>
+</section>
+
+<section id="b4">
+  <h2><span class="num">4</span> 7 Schema-nın strukturu</h2>
+  <p class="lead">Schema-lar məntiqi domen qruplarıdır. Bu yanaşma <strong>mikro-servis-ready arxitektura</strong> deməkdir — gələcəkdə hər schema ayrı servisə ayrıla bilər.</p>
+
+  <div class="schema-grid">
+    <div class="schema-card">
+      <h4>📍 geo</h4>
+      <span class="count">5 cədvəl</span>
+      <p>Azərbaycanın inzibati-coğrafi bölgüsü. 77 rayon, şəhərlər, qəsəbələr, koordinatlar.</p>
+      <div class="tables">regions · settlements · zones · ...</div>
+    </div>
+    <div class="schema-card">
+      <h4>🏫 infra</h4>
+      <span class="count">6 cədvəl</span>
+      <p>Məktəb infrastrukturu. 4,500+ məktəb, binalar, bölmələr, vəziyyət qiymətləndirməsi.</p>
+      <div class="tables">schools · buildings · building_sections · ...</div>
+    </div>
+    <div class="schema-card">
+      <h4>🏗️ construction</h4>
+      <span class="count">11 cədvəl</span>
+      <p>Layihə idarəetməsinin mərkəzi. Layihələr, mərhələlər, tapşırıqlar, inspeksiyalar, aktlar.</p>
+      <div class="tables">projects · phases · tasks · inspections · acts · ...</div>
+    </div>
+    <div class="schema-card">
+      <h4>💰 finance</h4>
+      <span class="count">6 cədvəl</span>
+      <p>Büdcə və maliyyə idarəetməsi. 300+ mln AZN illik büdcə, xərclər, ödənişlər.</p>
+      <div class="tables">budgets · expenses · payments · invoices · ...</div>
+    </div>
+    <div class="schema-card">
+      <h4>📦 inventory</h4>
+      <span class="count">6 cədvəl</span>
+      <p>Maddi-texniki baza. 200+ material növü, 15 anbar, avadanlıq idarəetməsi.</p>
+      <div class="tables">materials · warehouses · stock · equipment · ...</div>
+    </div>
+    <div class="schema-card">
+      <h4>👷 hr</h4>
+      <span class="count">7 cədvəl</span>
+      <p>İşçi heyət və podratçı idarəetməsi. 500+ işçi, 50+ podratçı şirkət, performans.</p>
+      <div class="tables">employees · positions · contractors · teams · ...</div>
+    </div>
+    <div class="schema-card">
+      <h4>📋 audit</h4>
+      <span class="count">5 cədvəl</span>
+      <p>Fəaliyyət izləmə, dəyişiklik tarixçəsi, sistem ayarları, bildirişlər.</p>
+      <div class="tables">activity_log · change_history · notifications · ...</div>
+    </div>
+  </div>
+</section>
+
+<section id="b5">
+  <h2><span class="num">5</span> geo schema — coğrafi data</h2>
+  <p class="lead">77 Azərbaycan rayonu və onların coğrafi strukturu. Bu schema bütün sistem üçün "anchor point" rolunu oynayır — hər layihə, məktəb, xərc bir rayona bağlıdır.</p>
+
+  <div class="table-card">
+    <h4>📌 geo.region_types</h4>
+    <p class="purpose">Rayon tipləri: şəhər, inzibati rayon, qəsəbə, Bakı rayonu və s.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Sütun</th><th>Tip</th><th>Vahid/Diapazon</th><th>Constraint</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td><code>SERIAL</code></td><td>auto</td><td><span class="pill pk">PK</span></td></tr>
+          <tr><td><code>code</code></td><td><code>VARCHAR(20)</code></td><td>CITY, DISTRICT, TOWN, BAKU_DISTRICT</td><td><span class="pill uniq">UNIQUE</span> <span class="pill nn">NOT NULL</span></td></tr>
+          <tr><td><code>name_az</code></td><td><code>VARCHAR(100)</code></td><td>Şəhər, Rayon, Qəsəbə, Bakı rayonu</td><td><span class="pill nn">NOT NULL</span></td></tr>
+          <tr><td><code>priority</code></td><td><code>SMALLINT</code></td><td>1-10 (1 = ən yüksək)</td><td><span class="pill def">DEFAULT 5</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>📌 geo.regions (77 sətir)</h4>
+    <p class="purpose">Azərbaycanın 77 inzibati-ərazi vahidi. Hər layihə, məktəb bura bağlıdır.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Sütun</th><th>Tip</th><th>Vahid/Diapazon</th><th>Constraint</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td><code>SERIAL</code></td><td>1-77</td><td><span class="pill pk">PK</span></td></tr>
+          <tr><td><code>code</code></td><td><code>VARCHAR(10)</code></td><td>BA, GA, NX, SM, ...</td><td><span class="pill uniq">UNIQUE</span> <span class="pill nn">NOT NULL</span></td></tr>
+          <tr><td><code>name_az</code></td><td><code>VARCHAR(100)</code></td><td>Bakı, Gəncə, Naxçıvan, Sumqayıt...</td><td><span class="pill nn">NOT NULL</span></td></tr>
+          <tr><td><code>type_id</code></td><td><code>INT</code></td><td>geo.region_types.id</td><td><span class="pill fk">FK</span> <span class="pill nn">NN</span></td></tr>
+          <tr><td><code>population</code></td><td><code>INT</code></td><td>nəfər, 5,000 - 2,500,000</td><td><span class="pill chk">CHECK &gt; 0</span></td></tr>
+          <tr><td><code>area_km2</code></td><td><code>NUMERIC(10,2)</code></td><td>km² (0.01 dəqiq)</td><td></td></tr>
+          <tr><td><code>center_lat</code></td><td><code>NUMERIC(9,6)</code></td><td>38.0–42.0 (Azərbaycan)</td><td><span class="pill chk">CHECK</span></td></tr>
+          <tr><td><code>center_lng</code></td><td><code>NUMERIC(9,6)</code></td><td>44.0–51.0 (Azərbaycan)</td><td><span class="pill chk">CHECK</span></td></tr>
+          <tr><td><code>is_active</code></td><td><code>BOOLEAN</code></td><td>aktiv / deaktiv</td><td><span class="pill def">DEFAULT TRUE</span></td></tr>
+          <tr><td><code>school_count</code></td><td><code>INT</code></td><td>avtomatik hesablanır</td><td><span class="pill def">DEFAULT 0</span></td></tr>
+          <tr><td><code>created_at</code></td><td><code>TIMESTAMP</code></td><td>ISO 8601</td><td><span class="pill def">DEFAULT NOW()</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-title sql">SQL — regions seed nümunə</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="kw">INSERT INTO</span> geo.regions (code, name_az, type_id, population, area_km2, center_lat, center_lng) <span class="kw">VALUES</span>
+(<span class="str">'BA'</span>, <span class="str">'Bakı şəhəri'</span>,       <span class="num">4</span>, <span class="num">2300500</span>, <span class="num">2140.00</span>, <span class="num">40.409264</span>, <span class="num">49.867092</span>),
+(<span class="str">'GA'</span>, <span class="str">'Gəncə şəhəri'</span>,      <span class="num">1</span>,  <span class="num">335600</span>,  <span class="num">110.00</span>, <span class="num">40.682799</span>, <span class="num">46.360585</span>),
+(<span class="str">'NX'</span>, <span class="str">'Naxçıvan Muxtar Resp.'</span>, <span class="num">1</span>, <span class="num">465500</span>, <span class="num">5502.75</span>, <span class="num">39.209170</span>, <span class="num">45.412220</span>),
+(<span class="str">'SM'</span>, <span class="str">'Sumqayıt şəhəri'</span>,   <span class="num">1</span>,  <span class="num">345300</span>,   <span class="num">83.00</span>, <span class="num">40.589730</span>, <span class="num">49.668685</span>),
+(<span class="str">'AB'</span>, <span class="str">'Abşeron rayonu'</span>,    <span class="num">2</span>,  <span class="num">245500</span>, <span class="num">1360.00</span>, <span class="num">40.500000</span>, <span class="num">49.700000</span>),
+<span class="cmt">-- ... 72 rayon daha</span>
+(<span class="str">'ZN'</span>, <span class="str">'Zaqatala rayonu'</span>,   <span class="num">2</span>,  <span class="num">128500</span>, <span class="num">1348.00</span>, <span class="num">41.630959</span>, <span class="num">46.642954</span>);</code></pre>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">i</span>
+    <div class="callout-content">
+      <div class="callout-title">Nə üçün NUMERIC(9,6)?</div>
+      <div class="callout-body">
+        <p>GPS koordinatları üçün: 9 ümumi rəqəm, 6 ondalıq hissə — ±0.1 metr dəqiqlik (peşəkar GIS tələbi). <code class="inline">40.409264</code> — Bakı şəhərinin koordinatı.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="b6">
+  <h2><span class="num">6</span> infra schema — infrastruktur</h2>
+  <p class="lead">Təhsil infrastrukturunun reyestri. Hər məktəb, hər bina, hər bölmə burada qeydiyyatdadır.</p>
+
+  <div class="table-card">
+    <h4>🏫 infra.schools (4,500+ sətir)</h4>
+    <p class="purpose">Azərbaycanın bütün məktəbləri — şagird sayı, vəziyyət, rayon, ünvan.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Sütun</th><th>Tip</th><th>Vahid/Diapazon</th><th>Constraint</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td><code>SERIAL</code></td><td>auto</td><td><span class="pill pk">PK</span></td></tr>
+          <tr><td><code>code</code></td><td><code>VARCHAR(20)</code></td><td>SCH-BA-001, SCH-GA-045</td><td><span class="pill uniq">UNIQUE</span> <span class="pill nn">NN</span></td></tr>
+          <tr><td><code>name</code></td><td><code>VARCHAR(200)</code></td><td>"145 saylı tam orta məktəb"</td><td><span class="pill nn">NN</span></td></tr>
+          <tr><td><code>region_id</code></td><td><code>INT</code></td><td>FK → geo.regions</td><td><span class="pill fk">FK</span> <span class="pill nn">NN</span> <span class="pill idx">IDX</span></td></tr>
+          <tr><td><code>type_id</code></td><td><code>INT</code></td><td>FK → school_types (lisey, gimnaziya...)</td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>address</code></td><td><code>VARCHAR(300)</code></td><td>küçə, ev nömrəsi</td><td></td></tr>
+          <tr><td><code>student_count</code></td><td><code>INT</code></td><td>nəfər, 10-5000</td><td><span class="pill chk">CHECK ≥ 0</span></td></tr>
+          <tr><td><code>teacher_count</code></td><td><code>INT</code></td><td>nəfər, 5-500</td><td><span class="pill chk">CHECK ≥ 0</span></td></tr>
+          <tr><td><code>total_area_m2</code></td><td><code>NUMERIC(10,2)</code></td><td>m²</td><td></td></tr>
+          <tr><td><code>built_year</code></td><td><code>SMALLINT</code></td><td>1900-2026</td><td><span class="pill chk">CHECK</span></td></tr>
+          <tr><td><code>last_major_repair</code></td><td><code>DATE</code></td><td>ISO 8601</td><td></td></tr>
+          <tr><td><code>condition</code></td><td><code>VARCHAR(20)</code></td><td>'excellent','good','satisfactory','poor','critical'</td><td><span class="pill chk">CHECK IN (...)</span></td></tr>
+          <tr><td><code>has_heating</code></td><td><code>BOOLEAN</code></td><td>istilik varmı</td><td><span class="pill def">DEFAULT FALSE</span></td></tr>
+          <tr><td><code>has_canteen</code></td><td><code>BOOLEAN</code></td><td>yeməkxana varmı</td><td><span class="pill def">DEFAULT FALSE</span></td></tr>
+          <tr><td><code>has_gym</code></td><td><code>BOOLEAN</code></td><td>idman zalı</td><td><span class="pill def">DEFAULT FALSE</span></td></tr>
+          <tr><td><code>has_library</code></td><td><code>BOOLEAN</code></td><td>kitabxana</td><td><span class="pill def">DEFAULT FALSE</span></td></tr>
+          <tr><td><code>director_name</code></td><td><code>VARCHAR(200)</code></td><td>Tam ad, ata adı</td><td></td></tr>
+          <tr><td><code>phone</code></td><td><code>VARCHAR(20)</code></td><td>+994XXXXXXXXX</td><td></td></tr>
+          <tr><td><code>email</code></td><td><code>VARCHAR(100)</code></td><td>e-poçt</td><td></td></tr>
+          <tr><td><code>lat, lng</code></td><td><code>NUMERIC(9,6)</code></td><td>GPS</td><td></td></tr>
+          <tr><td><code>is_active</code></td><td><code>BOOLEAN</code></td><td></td><td><span class="pill def">DEFAULT TRUE</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>🏛️ infra.buildings</h4>
+    <p class="purpose">Məktəbə aid binalar (məktəb bir neçə bina ola bilər — əsas, əlavə, yataqxana).</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Sütun</th><th>Tip</th><th>Vahid/Diapazon</th><th>Constraint</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>school_id</code></td><td><code>INT</code></td><td>FK → schools</td><td><span class="pill fk">FK</span> <span class="pill nn">NN</span></td></tr>
+          <tr><td><code>building_type</code></td><td><code>VARCHAR(30)</code></td><td>'main','annex','dormitory','gym','canteen'</td><td><span class="pill chk">CHECK</span></td></tr>
+          <tr><td><code>floors</code></td><td><code>SMALLINT</code></td><td>1-6</td><td><span class="pill chk">CHECK 1-10</span></td></tr>
+          <tr><td><code>area_m2</code></td><td><code>NUMERIC(10,2)</code></td><td>m²</td><td></td></tr>
+          <tr><td><code>year_built</code></td><td><code>SMALLINT</code></td><td>1900-2026</td><td></td></tr>
+          <tr><td><code>classroom_count</code></td><td><code>SMALLINT</code></td><td>ədəd</td><td></td></tr>
+          <tr><td><code>structural_condition</code></td><td><code>NUMERIC(3,1)</code></td><td>1.0-10.0 (10 = ideal)</td><td><span class="pill chk">CHECK 0-10</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>🔍 infra.condition_assessments</h4>
+    <p class="purpose">Binaların texniki vəziyyət qiymətləndirmələri (illik, zələ, yanğın və s. sonra).</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Sütun</th><th>Tip</th><th>Vahid/Diapazon</th><th>Qeyd</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>building_id</code></td><td><code>INT</code></td><td>FK → buildings</td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>assessment_date</code></td><td><code>DATE</code></td><td>ISO 8601</td><td></td></tr>
+          <tr><td><code>inspector_id</code></td><td><code>INT</code></td><td>FK → hr.employees</td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>overall_score</code></td><td><code>NUMERIC(3,1)</code></td><td>1.0-10.0</td><td></td></tr>
+          <tr><td><code>roof_score</code></td><td><code>NUMERIC(3,1)</code></td><td>1.0-10.0</td><td></td></tr>
+          <tr><td><code>walls_score</code></td><td><code>NUMERIC(3,1)</code></td><td>1.0-10.0</td><td></td></tr>
+          <tr><td><code>heating_score</code></td><td><code>NUMERIC(3,1)</code></td><td>1.0-10.0</td><td></td></tr>
+          <tr><td><code>electrical_score</code></td><td><code>NUMERIC(3,1)</code></td><td>1.0-10.0</td><td></td></tr>
+          <tr><td><code>plumbing_score</code></td><td><code>NUMERIC(3,1)</code></td><td>1.0-10.0</td><td></td></tr>
+          <tr><td><code>urgency</code></td><td><code>VARCHAR(20)</code></td><td>'low','normal','high','urgent'</td><td></td></tr>
+          <tr><td><code>estimated_cost</code></td><td><code>NUMERIC(14,2)</code></td><td>AZN</td><td></td></tr>
+          <tr><td><code>recommendations</code></td><td><code>TEXT</code></td><td>sərbəst mətn</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="b7">
+  <h2><span class="num">7</span> construction schema — layihələr (MƏRKƏZ!)</h2>
+  <p class="lead">Bu, bütün sistemin <strong>ürəyidir</strong>. Hər layihə bir məktəbin bir binasında müəyyən iş növünü müəyyən büdcə ilə icra edir. Minlərlə əlaqəli sətir bu cədvəllərin ətrafında formalaşır.</p>
+
+  <div class="table-card">
+    <h4>📋 construction.project_types</h4>
+    <p class="purpose">Layihə növü reyestri. 3 əsas növ: cari təmir, kapital təmir, əsaslı tikinti.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Sütun</th><th>Tip</th><th>Nümunə</th><th>Qeyd</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>code</code></td><td><code>VARCHAR(20)</code></td><td>CURRENT_REPAIR, CAPITAL_REPAIR, NEW_CONSTRUCTION, RECONSTRUCTION</td><td><span class="pill uniq">UQ</span></td></tr>
+          <tr><td><code>name_az</code></td><td><code>VARCHAR(100)</code></td><td>Cari təmir, Kapital təmir, Yeni tikinti, Yenidənqurma</td><td></td></tr>
+          <tr><td><code>typical_duration_days</code></td><td><code>SMALLINT</code></td><td>30, 180, 540, 365</td><td></td></tr>
+          <tr><td><code>requires_inspection</code></td><td><code>BOOLEAN</code></td><td>TRUE</td><td></td></tr>
+          <tr><td><code>icon</code></td><td><code>VARCHAR(10)</code></td><td>🔧, 🏗️, 🏠, 🔨</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>🏗️ construction.projects (120+ sətir) — ƏSAS CƏDVƏL</h4>
+    <p class="purpose">Layihələrin əsas cədvəli. Hər layihə bir məktəbin bir binasında müəyyən büdcə ilə icra edilir.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Sütun</th><th>Tip</th><th>Vahid/Diapazon</th><th>Constraint</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td><code>SERIAL</code></td><td>auto</td><td><span class="pill pk">PK</span></td></tr>
+          <tr><td><code>project_code</code></td><td><code>VARCHAR(30)</code></td><td>PRJ-2025-0001</td><td><span class="pill uniq">UQ</span> <span class="pill nn">NN</span></td></tr>
+          <tr><td><code>name</code></td><td><code>VARCHAR(300)</code></td><td>"145 saylı məktəbin kapital təmiri"</td><td><span class="pill nn">NN</span></td></tr>
+          <tr><td><code>type_id</code></td><td><code>INT</code></td><td>FK → project_types</td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>region_id</code></td><td><code>INT</code></td><td>FK → geo.regions</td><td><span class="pill fk">FK</span> <span class="pill idx">IDX</span></td></tr>
+          <tr><td><code>school_id</code></td><td><code>INT</code></td><td>FK → infra.schools</td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>building_id</code></td><td><code>INT</code></td><td>FK → infra.buildings</td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>manager_id</code></td><td><code>INT</code></td><td>FK → hr.employees</td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>contractor_id</code></td><td><code>INT</code></td><td>FK → hr.contractors</td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>status</code></td><td><code>VARCHAR(30)</code></td><td>'planned','approved','in_progress','on_hold','completed','cancelled'</td><td><span class="pill chk">CHK</span> <span class="pill idx">IDX</span></td></tr>
+          <tr><td><code>priority</code></td><td><code>SMALLINT</code></td><td>1-5 (1 = təcili)</td><td><span class="pill chk">CHK 1-5</span></td></tr>
+          <tr><td><code>start_date</code></td><td><code>DATE</code></td><td>planlaşdırılan</td><td></td></tr>
+          <tr><td><code>end_date</code></td><td><code>DATE</code></td><td>planlaşdırılan</td><td></td></tr>
+          <tr><td><code>actual_start</code></td><td><code>DATE</code></td><td>faktiki</td><td></td></tr>
+          <tr><td><code>actual_end</code></td><td><code>DATE</code></td><td>faktiki</td><td></td></tr>
+          <tr><td><code>planned_budget</code></td><td><code>NUMERIC(14,2)</code></td><td>AZN, 5,000 - 10,000,000</td><td><span class="pill chk">CHK &gt; 0</span></td></tr>
+          <tr><td><code>actual_cost</code></td><td><code>NUMERIC(14,2)</code></td><td>AZN, aktual xərc</td><td></td></tr>
+          <tr><td><code>progress_percent</code></td><td><code>SMALLINT</code></td><td>0-100</td><td><span class="pill chk">CHK 0-100</span></td></tr>
+          <tr><td><code>description</code></td><td><code>TEXT</code></td><td>sərbəst mətn</td><td></td></tr>
+          <tr><td><code>approval_doc_ref</code></td><td><code>VARCHAR(100)</code></td><td>sərəncam nömrəsi</td><td></td></tr>
+          <tr><td><code>approved_by</code></td><td><code>VARCHAR(200)</code></td><td>şəxsin adı</td><td></td></tr>
+          <tr><td><code>approved_date</code></td><td><code>DATE</code></td><td></td><td></td></tr>
+          <tr><td><code>expected_impact</code></td><td><code>TEXT</code></td><td>məktəbə təsir</td><td></td></tr>
+          <tr><td><code>notes</code></td><td><code>TEXT</code></td><td>əlavə qeydlər</td><td></td></tr>
+          <tr><td><code>created_at</code></td><td><code>TIMESTAMP</code></td><td></td><td><span class="pill def">NOW()</span></td></tr>
+          <tr><td><code>updated_at</code></td><td><code>TIMESTAMP</code></td><td></td><td><span class="pill def">NOW()</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-content">
+        <div class="callout-title">Niyə planned_budget və actual_cost ayrıca?</div>
+        <div class="callout-body">
+          <p>Real dünyada <strong>həmişə fərq</strong> olur — plan 500,000 AZN, amma aktual 620,000 AZN. Bu 24% artım biznesdə <em>variance</em> adlanır. Bizim <code class="inline">v_budget_tracking</code> view-u bu fərqi avtomatik hesablayır.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>📅 construction.project_phases</h4>
+    <p class="purpose">Hər layihənin mərhələləri: dizayn, hazırlıq, icra, yoxlama, təhvil.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>project_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>phase_number</code></td><td><code>SMALLINT</code></td><td>1-10</td></tr>
+          <tr><td><code>name</code></td><td><code>VARCHAR(100)</code></td><td>Dizayn, Fundament, Divar, Dam və s.</td></tr>
+          <tr><td><code>start_date, end_date</code></td><td><code>DATE</code></td><td></td></tr>
+          <tr><td><code>status</code></td><td><code>VARCHAR(20)</code></td><td>pending, in_progress, completed</td></tr>
+          <tr><td><code>completion_pct</code></td><td><code>SMALLINT</code></td><td>0-100</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>🔍 construction.inspections</h4>
+    <p class="purpose">Layihə üzrə yoxlamalar — dövlət orqanlarının, daxili auditin, podratçı yoxlamaları.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>project_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>inspector_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK → hr.employees</span></td></tr>
+          <tr><td><code>inspection_type</code></td><td><code>VARCHAR(30)</code></td><td>'scheduled','unscheduled','complaint','acceptance'</td></tr>
+          <tr><td><code>inspection_date</code></td><td><code>DATE</code></td><td></td></tr>
+          <tr><td><code>quality_score</code></td><td><code>NUMERIC(3,1)</code></td><td>1-10</td></tr>
+          <tr><td><code>issues_found</code></td><td><code>SMALLINT</code></td><td>ədəd</td></tr>
+          <tr><td><code>issues_resolved</code></td><td><code>SMALLINT</code></td><td>ədəd</td></tr>
+          <tr><td><code>requires_followup</code></td><td><code>BOOLEAN</code></td><td></td></tr>
+          <tr><td><code>report_text</code></td><td><code>TEXT</code></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>📝 construction.acts</h4>
+    <p class="purpose">Qəbul aktları — hər mərhələ/layihə üçün imzalanan sənədlər.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>project_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>act_number</code></td><td><code>VARCHAR(50)</code></td><td>"ACT-2025-0042"</td></tr>
+          <tr><td><code>act_type</code></td><td><code>VARCHAR(30)</code></td><td>'intermediate','final','correction'</td></tr>
+          <tr><td><code>act_date</code></td><td><code>DATE</code></td><td></td></tr>
+          <tr><td><code>amount</code></td><td><code>NUMERIC(14,2)</code></td><td>AZN</td></tr>
+          <tr><td><code>signed_by_contractor</code></td><td><code>BOOLEAN</code></td><td></td></tr>
+          <tr><td><code>signed_by_manager</code></td><td><code>BOOLEAN</code></td><td></td></tr>
+          <tr><td><code>signed_by_inspector</code></td><td><code>BOOLEAN</code></td><td></td></tr>
+          <tr><td><code>is_paid</code></td><td><code>BOOLEAN</code></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>📧 construction.citizen_complaints</h4>
+    <p class="purpose">Vətəndaş müraciətləri və şikayətləri (ASAN xidmətdən gələn, email, zəng).</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>school_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK, nullable</span></td></tr>
+          <tr><td><code>project_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK, nullable</span></td></tr>
+          <tr><td><code>complaint_date</code></td><td><code>DATE</code></td><td></td></tr>
+          <tr><td><code>channel</code></td><td><code>VARCHAR(20)</code></td><td>'asan','phone','email','letter','website'</td></tr>
+          <tr><td><code>category</code></td><td><code>VARCHAR(50)</code></td><td>'heating','roof','safety','corruption'</td></tr>
+          <tr><td><code>urgency</code></td><td><code>VARCHAR(20)</code></td><td>'low','normal','high','critical'</td></tr>
+          <tr><td><code>status</code></td><td><code>VARCHAR(20)</code></td><td>'new','investigating','resolved','closed'</td></tr>
+          <tr><td><code>resolution_days</code></td><td><code>SMALLINT</code></td><td>NULL-able</td></tr>
+          <tr><td><code>text</code></td><td><code>TEXT</code></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="b8">
+  <h2><span class="num">8</span> finance schema — maliyyə</h2>
+  <p class="lead">Büdcə, xərclər, ödənişlər, hesab-fakturalar. TTİ-nin illik 300+ milyon AZN-lik dövriyyəsi bu schema-da izlənir.</p>
+
+  <div class="table-card">
+    <h4>💰 finance.budgets</h4>
+    <p class="purpose">İllik büdcələr — rayon, layihə növü, maddə üzrə bölgü.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Vahid/Diapazon</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>fiscal_year</code></td><td><code>SMALLINT</code></td><td>2023-2030</td><td><span class="pill nn">NN</span></td></tr>
+          <tr><td><code>region_id</code></td><td><code>INT</code></td><td>FK</td><td></td></tr>
+          <tr><td><code>category</code></td><td><code>VARCHAR(50)</code></td><td>'current','capital','construction','emergency'</td><td></td></tr>
+          <tr><td><code>allocated_amount</code></td><td><code>NUMERIC(14,2)</code></td><td>AZN, 0 - 500M</td><td></td></tr>
+          <tr><td><code>spent_amount</code></td><td><code>NUMERIC(14,2)</code></td><td>AZN</td><td><span class="pill def">DEFAULT 0</span></td></tr>
+          <tr><td><code>reserved_amount</code></td><td><code>NUMERIC(14,2)</code></td><td>ehtiyatdə</td><td></td></tr>
+          <tr><td><code>source</code></td><td><code>VARCHAR(50)</code></td><td>'state','municipal','grant','partner'</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>💸 finance.expenses</h4>
+    <p class="purpose">Bütün xərclər — material, iş haqqı, nəqliyyat, sair.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>project_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>expense_date</code></td><td><code>DATE</code></td><td></td></tr>
+          <tr><td><code>category</code></td><td><code>VARCHAR(50)</code></td><td>'material','labor','transport','utility','other'</td></tr>
+          <tr><td><code>subcategory</code></td><td><code>VARCHAR(100)</code></td><td>"sement","kərpic","dam dəmiri"</td></tr>
+          <tr><td><code>amount</code></td><td><code>NUMERIC(14,2)</code></td><td>AZN</td></tr>
+          <tr><td><code>vat_included</code></td><td><code>BOOLEAN</code></td><td></td></tr>
+          <tr><td><code>description</code></td><td><code>TEXT</code></td><td></td></tr>
+          <tr><td><code>approved_by</code></td><td><code>INT</code></td><td><span class="pill fk">FK → employees</span></td></tr>
+          <tr><td><code>invoice_number</code></td><td><code>VARCHAR(50)</code></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>💳 finance.payments</h4>
+    <p class="purpose">Podratçılara ödənişlər, hesab-faktura ilə əlaqəli.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>invoice_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>contractor_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>payment_date</code></td><td><code>DATE</code></td><td></td></tr>
+          <tr><td><code>amount</code></td><td><code>NUMERIC(14,2)</code></td><td>AZN</td></tr>
+          <tr><td><code>method</code></td><td><code>VARCHAR(30)</code></td><td>'bank_transfer','cash','cheque'</td></tr>
+          <tr><td><code>status</code></td><td><code>VARCHAR(20)</code></td><td>'pending','completed','rejected'</td></tr>
+          <tr><td><code>reference_number</code></td><td><code>VARCHAR(100)</code></td><td>SWIFT ya da daxili ID</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="b9">
+  <h2><span class="num">9</span> inventory schema — Maddi-Texniki Baza</h2>
+  <p class="lead">Tikinti materialları, avadanlıq, anbarlar. Materialların anbardan layihəyə paylanması, anbar qalıqları real-time izlənir.</p>
+
+  <div class="table-card">
+    <h4>📦 inventory.materials (200+ növ)</h4>
+    <p class="purpose">Material reyestri — sement, kərpic, arma, boya və s.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Vahid/Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>code</code></td><td><code>VARCHAR(30)</code></td><td>"MAT-CEM-M500"</td></tr>
+          <tr><td><code>name_az</code></td><td><code>VARCHAR(200)</code></td><td>"Sement M500, Qarabağ"</td></tr>
+          <tr><td><code>category_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>unit</code></td><td><code>VARCHAR(20)</code></td><td>'kg','ton','m','m2','m3','adet','litr'</td></tr>
+          <tr><td><code>standard_price</code></td><td><code>NUMERIC(10,2)</code></td><td>AZN/vahid</td></tr>
+          <tr><td><code>min_stock_level</code></td><td><code>NUMERIC(10,2)</code></td><td>kritik minimum</td></tr>
+          <tr><td><code>typical_supplier</code></td><td><code>VARCHAR(200)</code></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>🏪 inventory.warehouses (15 ədəd)</h4>
+    <p class="purpose">Anbarlar — regional, mərkəzi, müvəqqəti.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>code</code></td><td><code>VARCHAR(20)</code></td><td>"WH-BA-01"</td></tr>
+          <tr><td><code>name</code></td><td><code>VARCHAR(200)</code></td><td>"Bakı Mərkəzi Anbar"</td></tr>
+          <tr><td><code>region_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>area_m2</code></td><td><code>NUMERIC(10,2)</code></td><td>m²</td></tr>
+          <tr><td><code>manager_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK → employees</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>📊 inventory.stock_levels</h4>
+    <p class="purpose">Hər anbarda hər materialın cari qalığı. Real-time.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>warehouse_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>material_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>quantity</code></td><td><code>NUMERIC(12,3)</code></td><td>cari qalıq</td></tr>
+          <tr><td><code>last_updated</code></td><td><code>TIMESTAMP</code></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>🔄 inventory.material_transactions</h4>
+    <p class="purpose">Anbar əməliyyatları — daxil olma, çıxış, transfer, hədər.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>transaction_type</code></td><td><code>VARCHAR(20)</code></td><td>'in','out','transfer','waste','return'</td></tr>
+          <tr><td><code>warehouse_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>project_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK, nullable</span></td></tr>
+          <tr><td><code>material_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>quantity</code></td><td><code>NUMERIC(12,3)</code></td><td>(+ ya -)</td></tr>
+          <tr><td><code>unit_price</code></td><td><code>NUMERIC(10,2)</code></td><td>AZN/vahid</td></tr>
+          <tr><td><code>total_amount</code></td><td><code>NUMERIC(14,2)</code></td><td>hesablanır</td></tr>
+          <tr><td><code>transaction_date</code></td><td><code>TIMESTAMP</code></td><td></td></tr>
+          <tr><td><code>performed_by</code></td><td><code>INT</code></td><td><span class="pill fk">FK → employees</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="b10">
+  <h2><span class="num">10</span> hr schema — İşçi heyət və podratçılar</h2>
+  <p class="lead">İşçilər, briqadalar, podratçı şirkətlər, performans qiymətləndirmələri.</p>
+
+  <div class="table-card">
+    <h4>👥 hr.employees (500+)</h4>
+    <p class="purpose">TTİ-nin işçiləri — menecerlər, inşaatçılar, mühəndislər, mühasiblər, inspektorlar.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>full_name</code></td><td><code>VARCHAR(200)</code></td><td>"Məmmədov Rəşad Vüqar oğlu"</td></tr>
+          <tr><td><code>position_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>department_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>region_id</code></td><td><code>INT</code></td><td>hansı rayonda işləyir</td></tr>
+          <tr><td><code>hire_date</code></td><td><code>DATE</code></td><td></td></tr>
+          <tr><td><code>monthly_salary</code></td><td><code>NUMERIC(10,2)</code></td><td>AZN</td></tr>
+          <tr><td><code>qualification_level</code></td><td><code>SMALLINT</code></td><td>1-5</td></tr>
+          <tr><td><code>certifications</code></td><td><code>TEXT[]</code></td><td>sertifikatlar array</td></tr>
+          <tr><td><code>is_active</code></td><td><code>BOOLEAN</code></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>🏢 hr.contractors (50+)</h4>
+    <p class="purpose">Podratçı şirkətlər — layihələri icra edən xarici şirkətlər.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>name</code></td><td><code>VARCHAR(200)</code></td><td>"Azərtikinti MMC"</td></tr>
+          <tr><td><code>tin</code></td><td><code>VARCHAR(15)</code></td><td>VÖEN, UQ</td></tr>
+          <tr><td><code>category</code></td><td><code>VARCHAR(50)</code></td><td>'general','electrical','plumbing','hvac'</td></tr>
+          <tr><td><code>registration_date</code></td><td><code>DATE</code></td><td></td></tr>
+          <tr><td><code>rating</code></td><td><code>NUMERIC(3,1)</code></td><td>1.0-10.0 (performans balı)</td></tr>
+          <tr><td><code>completed_projects</code></td><td><code>INT</code></td><td></td></tr>
+          <tr><td><code>total_revenue</code></td><td><code>NUMERIC(14,2)</code></td><td>AZN, ümumi</td></tr>
+          <tr><td><code>is_blacklisted</code></td><td><code>BOOLEAN</code></td><td>qara siyahıya daxildirmi?</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="b11">
+  <h2><span class="num">11</span> audit schema — log və izləmə</h2>
+  <p class="lead">Sistemdə baş verən bütün hərəkətləri izləyir — kim nə etdi, nə vaxt etdi, nəyi dəyişdi.</p>
+
+  <div class="table-card">
+    <h4>📋 audit.activity_log</h4>
+    <p class="purpose">Bütün istifadəçi hərəkətlərinin logu — login, sorğu, dəyişiklik, silmə.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>user_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>action</code></td><td><code>VARCHAR(50)</code></td><td>'login','create','update','delete','export'</td></tr>
+          <tr><td><code>entity_type</code></td><td><code>VARCHAR(50)</code></td><td>'project','expense','inspection'</td></tr>
+          <tr><td><code>entity_id</code></td><td><code>INT</code></td><td></td></tr>
+          <tr><td><code>ip_address</code></td><td><code>INET</code></td><td></td></tr>
+          <tr><td><code>user_agent</code></td><td><code>TEXT</code></td><td></td></tr>
+          <tr><td><code>timestamp</code></td><td><code>TIMESTAMP</code></td><td><span class="pill def">NOW()</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <h4>🔔 audit.notifications</h4>
+    <p class="purpose">İstifadəçilərə bildirişlər — yeni layihə, deadline, şikayət və s.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sütun</th><th>Tip</th><th>Qeyd</th></tr></thead>
+        <tbody>
+          <tr><td><code>user_id</code></td><td><code>INT</code></td><td><span class="pill fk">FK</span></td></tr>
+          <tr><td><code>type</code></td><td><code>VARCHAR(30)</code></td><td>'project','deadline','budget','complaint'</td></tr>
+          <tr><td><code>severity</code></td><td><code>VARCHAR(20)</code></td><td>'info','warning','critical'</td></tr>
+          <tr><td><code>title</code></td><td><code>VARCHAR(200)</code></td><td></td></tr>
+          <tr><td><code>message</code></td><td><code>TEXT</code></td><td></td></tr>
+          <tr><td><code>is_read</code></td><td><code>BOOLEAN</code></td><td></td></tr>
+          <tr><td><code>created_at</code></td><td><code>TIMESTAMP</code></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="b12">
+  <h2><span class="num">12</span> İndekslər və performans</h2>
+  <p class="lead">35 cədvəllik sistemdə indekslər <strong>mütləqdir</strong> — ən çox istifadə olunan sorğuları millisaniyələrdə işlətmək üçün.</p>
+
+  <h3>12.1. B-tree indekslər (standart)</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-title sql">SQL — Əsas indekslər</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="cmt">-- construction.projects — ən çox sorğulanan cədvəl</span>
+<span class="kw">CREATE INDEX</span> idx_projects_region      <span class="kw">ON</span> construction.projects(region_id);
+<span class="kw">CREATE INDEX</span> idx_projects_status      <span class="kw">ON</span> construction.projects(status);
+<span class="kw">CREATE INDEX</span> idx_projects_dates       <span class="kw">ON</span> construction.projects(start_date, end_date);
+<span class="kw">CREATE INDEX</span> idx_projects_contractor  <span class="kw">ON</span> construction.projects(contractor_id);
+
+<span class="cmt">-- Composite index — həm region, həm status üçün</span>
+<span class="kw">CREATE INDEX</span> idx_projects_region_status <span class="kw">ON</span> construction.projects(region_id, status);
+
+<span class="cmt">-- finance.expenses</span>
+<span class="kw">CREATE INDEX</span> idx_expenses_project    <span class="kw">ON</span> finance.expenses(project_id);
+<span class="kw">CREATE INDEX</span> idx_expenses_date       <span class="kw">ON</span> finance.expenses(expense_date);
+<span class="kw">CREATE INDEX</span> idx_expenses_category   <span class="kw">ON</span> finance.expenses(category);
+
+<span class="cmt">-- inventory.material_transactions — 50,000+ sətir ehtimalla</span>
+<span class="kw">CREATE INDEX</span> idx_mat_trans_date      <span class="kw">ON</span> inventory.material_transactions(transaction_date);
+<span class="kw">CREATE INDEX</span> idx_mat_trans_warehouse <span class="kw">ON</span> inventory.material_transactions(warehouse_id);
+<span class="kw">CREATE INDEX</span> idx_mat_trans_project   <span class="kw">ON</span> inventory.material_transactions(project_id);</code></pre>
+  </div>
+
+  <h3>12.2. Partial indeks (yalnız aktiv sətirlər üçün)</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-title sql">SQL — Partial index</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="cmt">-- Yalnız aktiv layihələr üçün — storage qənaəti</span>
+<span class="kw">CREATE INDEX</span> idx_projects_active <span class="kw">ON</span> construction.projects(status, region_id)
+<span class="kw">WHERE</span> status <span class="kw">IN</span> (<span class="str">'planned'</span>, <span class="str">'approved'</span>, <span class="str">'in_progress'</span>);</code></pre>
+  </div>
+
+  <h3>12.3. GIN indeks (array və full-text axtarış)</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-title sql">SQL — GIN index</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="cmt">-- Full-text axtarış — layihə adından</span>
+<span class="kw">CREATE INDEX</span> idx_projects_name_fts <span class="kw">ON</span> construction.projects
+  <span class="kw">USING</span> gin(to_tsvector(<span class="str">'simple'</span>, name));
+
+<span class="cmt">-- Array-da axtarış</span>
+<span class="kw">CREATE INDEX</span> idx_employees_certifications <span class="kw">ON</span> hr.employees
+  <span class="kw">USING</span> gin(certifications);</code></pre>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">i</span>
+    <div class="callout-content">
+      <div class="callout-title">İndekslər üçün qayda</div>
+      <div class="callout-body">
+        <ul>
+          <li>Primary key avtomatik indekslənir</li>
+          <li>Foreign key <strong>avtomatik olaraq indekslənmir</strong> — özümüz əlavə etməliyik</li>
+          <li>WHERE, ORDER BY, JOIN-də istifadə olunan sütunları indeksləyin</li>
+          <li>Çox yazılan (INSERT/UPDATE) cədvəllərdə çox indeks qoymayın — yazı yavaşlayır</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="b13">
+  <h2><span class="num">13</span> Trigger-lər və constraint-lər</h2>
+  <p class="lead">Bazanın <strong>özündə</strong> biznes qaydalarını saxlayırıq — bu, backend-də səhv kod olsa da, məlumatların düzgünlüyünü qoruyur.</p>
+
+  <h3>13.1. Trigger — updated_at avtomatik</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-title sql">SQL — Updated_at trigger</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="kw">CREATE OR REPLACE FUNCTION</span> update_timestamp()
+<span class="kw">RETURNS</span> TRIGGER <span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+  NEW.updated_at = NOW();
+  <span class="kw">RETURN</span> NEW;
+<span class="kw">END</span>;
+$$ <span class="kw">LANGUAGE</span> plpgsql;
+
+<span class="kw">CREATE TRIGGER</span> trg_projects_updated
+  <span class="kw">BEFORE UPDATE ON</span> construction.projects
+  <span class="kw">FOR EACH ROW</span> <span class="kw">EXECUTE FUNCTION</span> update_timestamp();</code></pre>
+  </div>
+
+  <h3>13.2. Trigger — budget sərf avtomatik hesablanması</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-title sql">SQL — Budget tracker trigger</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="kw">CREATE OR REPLACE FUNCTION</span> update_budget_spent()
+<span class="kw">RETURNS</span> TRIGGER <span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+  <span class="cmt">-- Yeni xərc əlavə olanda, müvafiq büdcənin spent_amount-u yenilənir</span>
+  <span class="kw">UPDATE</span> finance.budgets
+  <span class="kw">SET</span> spent_amount = spent_amount + NEW.amount
+  <span class="kw">WHERE</span> fiscal_year = EXTRACT(YEAR <span class="kw">FROM</span> NEW.expense_date)
+    <span class="kw">AND</span> region_id = (<span class="kw">SELECT</span> region_id <span class="kw">FROM</span> construction.projects
+                      <span class="kw">WHERE</span> id = NEW.project_id);
+  <span class="kw">RETURN</span> NEW;
+<span class="kw">END</span>;
+$$ <span class="kw">LANGUAGE</span> plpgsql;
+
+<span class="kw">CREATE TRIGGER</span> trg_expense_update_budget
+  <span class="kw">AFTER INSERT ON</span> finance.expenses
+  <span class="kw">FOR EACH ROW</span> <span class="kw">EXECUTE FUNCTION</span> update_budget_spent();</code></pre>
+  </div>
+
+  <h3>13.3. Trigger — stok qalığı avtomatik hesablanması</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-title sql">SQL — Stock trigger</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="kw">CREATE OR REPLACE FUNCTION</span> update_stock_level()
+<span class="kw">RETURNS</span> TRIGGER <span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+  <span class="kw">INSERT INTO</span> inventory.stock_levels (warehouse_id, material_id, quantity, last_updated)
+  <span class="kw">VALUES</span> (NEW.warehouse_id, NEW.material_id,
+          <span class="kw">CASE</span> <span class="kw">WHEN</span> NEW.transaction_type = <span class="str">'in'</span>  <span class="kw">THEN</span> NEW.quantity
+               <span class="kw">WHEN</span> NEW.transaction_type = <span class="str">'out'</span> <span class="kw">THEN</span> -NEW.quantity
+          <span class="kw">END</span>, NOW())
+  <span class="kw">ON CONFLICT</span> (warehouse_id, material_id) <span class="kw">DO UPDATE</span>
+  <span class="kw">SET</span> quantity = stock_levels.quantity +
+      <span class="kw">CASE</span> <span class="kw">WHEN</span> NEW.transaction_type = <span class="str">'in'</span>  <span class="kw">THEN</span> NEW.quantity
+           <span class="kw">WHEN</span> NEW.transaction_type = <span class="str">'out'</span> <span class="kw">THEN</span> -NEW.quantity
+      <span class="kw">END</span>,
+      last_updated = NOW();
+  <span class="kw">RETURN</span> NEW;
+<span class="kw">END</span>;
+$$ <span class="kw">LANGUAGE</span> plpgsql;
+
+<span class="kw">CREATE TRIGGER</span> trg_stock_auto_update
+  <span class="kw">AFTER INSERT ON</span> inventory.material_transactions
+  <span class="kw">FOR EACH ROW</span> <span class="kw">EXECUTE FUNCTION</span> update_stock_level();</code></pre>
+  </div>
+</section>
+
+<section id="b14">
+  <h2><span class="num">14</span> Reporting view-lar (15+)</h2>
+  <p class="lead">View-lar mürəkkəb sorğuları sadələşdirir. Aşağıda ən vacib view-ların adları və məqsədləri.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>View</th><th>Məqsəd</th><th>Əsas cədvəllər</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>v_regional_overview</code></td><td>77 rayon üzrə layihə və büdcə statistikası</td><td>regions, projects, budgets</td></tr>
+        <tr><td><code>v_project_status</code></td><td>Hər layihənin cari vəziyyəti, tərəqqisi</td><td>projects, phases, inspections</td></tr>
+        <tr><td><code>v_budget_tracking</code></td><td>Plan vs aktual xərclər, variance</td><td>projects, expenses, budgets</td></tr>
+        <tr><td><code>v_contractor_performance</code></td><td>Podratçıların rayting və tarixi</td><td>contractors, projects, inspections</td></tr>
+        <tr><td><code>v_material_flow</code></td><td>Material hərəkəti, qalıqlar, çatışmazlıq</td><td>materials, transactions, stock</td></tr>
+        <tr><td><code>v_deadline_monitoring</code></td><td>Gecikən layihələr, yaxınlaşan deadline</td><td>projects, phases</td></tr>
+        <tr><td><code>v_inspection_summary</code></td><td>Yoxlamaların yekunu, kefiyyət balları</td><td>inspections, projects</td></tr>
+        <tr><td><code>v_complaint_analysis</code></td><td>Vətəndaş şikayətləri, cavab vaxtı</td><td>complaints, projects</td></tr>
+        <tr><td><code>v_monthly_spending</code></td><td>Aylıq xərc dinamikası</td><td>expenses</td></tr>
+        <tr><td><code>v_top_projects_by_budget</code></td><td>Ən böyük layihələr</td><td>projects</td></tr>
+        <tr><td><code>v_employee_workload</code></td><td>İşçilərə düşən layihə yükü</td><td>employees, projects</td></tr>
+        <tr><td><code>v_school_repair_history</code></td><td>Hər məktəbin təmir tarixi</td><td>schools, projects</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="b15">
+  <h2><span class="num">15</span> Materialized view-lar — sürət üçün</h2>
+  <p class="lead">Artıq arti_schools-da gördük: materialized view SQL nəticəni diskdə saxlayır — 100-6000x sürət artımı.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-title sql">SQL — Materialized views</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="cmt">-- Əsas KPI dashboard üçün</span>
+<span class="kw">CREATE MATERIALIZED VIEW</span> reporting.mv_kpi_dashboard <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+  (<span class="kw">SELECT COUNT</span>(*) <span class="kw">FROM</span> geo.regions <span class="kw">WHERE</span> is_active)           <span class="kw">AS</span> active_regions,
+  (<span class="kw">SELECT COUNT</span>(*) <span class="kw">FROM</span> infra.schools <span class="kw">WHERE</span> is_active)          <span class="kw">AS</span> active_schools,
+  (<span class="kw">SELECT COUNT</span>(*) <span class="kw">FROM</span> construction.projects)                   <span class="kw">AS</span> total_projects,
+  (<span class="kw">SELECT COUNT</span>(*) <span class="kw">FROM</span> construction.projects 
+   <span class="kw">WHERE</span> status = <span class="str">'in_progress'</span>)                                 <span class="kw">AS</span> active_projects,
+  (<span class="kw">SELECT</span> ROUND(<span class="kw">SUM</span>(planned_budget), 0) <span class="kw">FROM</span> construction.projects) <span class="kw">AS</span> total_planned,
+  (<span class="kw">SELECT</span> ROUND(<span class="kw">SUM</span>(actual_cost), 0) <span class="kw">FROM</span> construction.projects)   <span class="kw">AS</span> total_spent,
+  (<span class="kw">SELECT</span> ROUND(<span class="kw">AVG</span>(progress_percent), 1) <span class="kw">FROM</span> construction.projects) <span class="kw">AS</span> avg_progress;
+
+<span class="cmt">-- Avtomatik refresh üçün</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> reporting.refresh_all_mv()
+<span class="kw">RETURNS</span> TEXT <span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+  <span class="kw">REFRESH MATERIALIZED VIEW</span> reporting.mv_kpi_dashboard;
+  <span class="kw">REFRESH MATERIALIZED VIEW</span> reporting.mv_region_ranking;
+  <span class="kw">REFRESH MATERIALIZED VIEW</span> reporting.mv_top_projects;
+  <span class="kw">REFRESH MATERIALIZED VIEW</span> reporting.mv_monthly_progress;
+  <span class="kw">RETURN</span> <span class="str">'✅ Bütün MV-lər yeniləndi'</span>;
+<span class="kw">END</span>;
+$$ <span class="kw">LANGUAGE</span> plpgsql;</code></pre>
+  </div>
+</section>
+
+<section id="b16">
+  <h2><span class="num">16</span> Data həcmi planı</h2>
+  <p class="lead">Seed data zamanı yaradılacaq sətirlərin sayı.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Schema</th><th>Cədvəl</th><th>Planlaşdırılan sətir sayı</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>geo</td><td>regions</td><td>77 (real rayonlar)</td></tr>
+        <tr><td>geo</td><td>settlements</td><td>300+</td></tr>
+        <tr><td>infra</td><td>schools</td><td><strong>100</strong> (seçmə pilot)</td></tr>
+        <tr><td>infra</td><td>buildings</td><td>150 (hər məktəb 1-2 bina)</td></tr>
+        <tr><td>infra</td><td>condition_assessments</td><td>300 (hər binaya 2 qiymətləndirmə)</td></tr>
+        <tr><td>construction</td><td><strong>projects</strong></td><td><strong>120</strong> (2023-2026)</td></tr>
+        <tr><td>construction</td><td>project_phases</td><td>500 (hər layihə 3-5 mərhələ)</td></tr>
+        <tr><td>construction</td><td>inspections</td><td>800</td></tr>
+        <tr><td>construction</td><td>acts</td><td>400</td></tr>
+        <tr><td>construction</td><td>citizen_complaints</td><td>300</td></tr>
+        <tr><td>finance</td><td>budgets</td><td>15 (3 il × 5 kateqoriya)</td></tr>
+        <tr><td>finance</td><td>expenses</td><td><strong>5,000+</strong></td></tr>
+        <tr><td>finance</td><td>payments</td><td>1,500</td></tr>
+        <tr><td>inventory</td><td>materials</td><td>200</td></tr>
+        <tr><td>inventory</td><td>warehouses</td><td>15</td></tr>
+        <tr><td>inventory</td><td>material_transactions</td><td><strong>8,000+</strong></td></tr>
+        <tr><td>hr</td><td>employees</td><td>300</td></tr>
+        <tr><td>hr</td><td>contractors</td><td>50</td></tr>
+        <tr><td>audit</td><td>activity_log</td><td>10,000+</td></tr>
+      </tbody>
+      <tfoot>
+        <tr style="background: var(--primary-light); font-weight: 700;">
+          <td colspan="2">CƏMİ</td>
+          <td>~30,000 sətir</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</section>
+
+<section id="b17">
+  <h2><span class="num">17</span> Schema tətbiqi</h2>
+  <p class="lead">Bütün SQL skriptlərini ardıcıl tətbiq edirik. Hər fayl ayrıca modulu əhatə edir ki, xəta olsa asan tapılsın.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-title bash">bash — Layihəni qur</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="kw">cd</span> ~/Desktop/ARTI_Universal_Platform/domains/construction_management/database
+
+<span class="cmt"># 1. Baza yaradılır</span>
+createdb arti_construction
+
+<span class="cmt"># 2. Schema-lar və cədvəllər</span>
+psql arti_construction -f 01_schema.sql
+
+<span class="cmt"># 3. Reyestrlər (lookup data)</span>
+psql arti_construction -f 02a_geo.sql           <span class="cmt"># 77 rayon</span>
+psql arti_construction -f 02b_infra.sql         <span class="cmt"># məktəblər</span>
+psql arti_construction -f 02c_hr.sql            <span class="cmt"># işçilər, podratçılar</span>
+psql arti_construction -f 02d_inventory.sql     <span class="cmt"># materiallar, anbarlar</span>
+psql arti_construction -f 02e_finance.sql       <span class="cmt"># büdcələr</span>
+
+<span class="cmt"># 4. Əsas biznes data</span>
+psql arti_construction -f 03a_projects.sql      <span class="cmt"># 120 layihə</span>
+psql arti_construction -f 03b_transactions.sql  <span class="cmt"># xərclər, material hərəkəti</span>
+psql arti_construction -f 03c_inspections.sql   <span class="cmt"># yoxlamalar, aktlar</span>
+
+<span class="cmt"># 5. Trigger-lər</span>
+psql arti_construction -f 04_triggers.sql
+
+<span class="cmt"># 6. Reporting view-lar</span>
+psql arti_construction -f 05_views.sql
+
+<span class="cmt"># 7. Materialized view-lar</span>
+psql arti_construction -f 06_mv.sql
+
+<span class="cmt"># 8. Yoxlama</span>
+psql arti_construction -c <span class="str">"SELECT * FROM reporting.mv_kpi_dashboard;"</span></code></pre>
+  </div>
+</section>
+
+<section id="b18">
+  <h2><span class="num">18</span> Növbəti addım — app.R</h2>
+  <p class="lead">Bu dərsdə biz <strong>yalnız memarlığı</strong> qurduq. Növbəti mesajda:</p>
+
+  <ol>
+    <li><strong>SQL skriptlərini yaratmaq</strong> — 01_schema.sql, 02a-e, 03a-c, 04_triggers, 05_views, 06_mv</li>
+    <li><strong>Seed data-nı yaratmaq</strong> — real Azərbaycan rayonları, məktəb adları, layihələr</li>
+    <li><strong>Materialized view-ları icra etmək</strong> — sürət üçün</li>
+    <li><strong>Yeni nəfis app.R</strong> yaratmaq — 10-12 tab:
+      <ul>
+        <li>📊 Dashboard (KPI)</li>
+        <li>🗺️ Xəritə (77 rayon)</li>
+        <li>🏗️ Layihələr</li>
+        <li>💰 Büdcə analitika</li>
+        <li>🏫 Məktəblər reyestri</li>
+        <li>📦 MTB (materiallar)</li>
+        <li>👷 Podratçılar</li>
+        <li>🔍 Yoxlamalar</li>
+        <li>📧 Şikayətlər</li>
+        <li>📈 Trend analiz</li>
+        <li>✨ Claude AI</li>
+      </ul>
+    </li>
+  </ol>
+
+  <div class="callout success">
+    <span class="callout-icon">✓</span>
+    <div class="callout-content">
+      <div class="callout-title">Universal AI Agent — nümayiş tamamlanır</div>
+      <div class="callout-body">
+        <p>Bu dərsi və növbəti mərhələləri bitirəndə <strong>eyni Backend + Frontend arxitekturası</strong> iki tamamilə fərqli domen üçün işləyəcək:</p>
+        <ul>
+          <li>✅ <strong>arti_schools</strong> — məktəb analitikası (qiymət, davamiyyət)</li>
+          <li>✅ <strong>arti_construction</strong> — TTİ idarəetməsi (layihə, büdcə, MTB)</li>
+        </ul>
+        <p>Və gələcəkdə hər hansı ARTI domeni (aptek, poliklinika, reyestr, arxiv) eyni şablon üzrə qurula bilər!</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>18.1. Layihənin saxlanacağı yer</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-title bash">bash — Strukturlu saxlanış</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code>~/Desktop/ARTI_Universal_Platform/
+├── domains/
+│   ├── schools_analytics/          <span class="cmt"># mövcud</span>
+│   │   ├── database/
+│   │   └── shiny/
+│   │
+│   └── construction_management/    <span class="cmt"># YENİ</span>
+│       ├── database/
+│       │   ├── 01_schema.sql
+│       │   ├── 02a_geo.sql
+│       │   ├── 02b_infra.sql
+│       │   ├── 02c_hr.sql
+│       │   ├── 02d_inventory.sql
+│       │   ├── 02e_finance.sql
+│       │   ├── 03a_projects.sql
+│       │   ├── 03b_transactions.sql
+│       │   ├── 03c_inspections.sql
+│       │   ├── 04_triggers.sql
+│       │   ├── 05_views.sql
+│       │   └── 06_mv.sql
+│       ├── docs/
+│       │   └── Təmir_tikinti_dərs_1_əlavə.html  <span class="cmt"># BU FAYL</span>
+│       └── shiny/
+│           └── app.R               <span class="cmt"># növbəti mərhələdə</span>
+│
+└── shared/                          <span class="cmt"># invariant kompanentlər</span>
+    ├── backend/  (Node.js API)
+    ├── frontend/ (React)
+    └── scripts/</code></pre>
+  </div>
+
+  <h3>18.2. GitHub backup (tövsiyə)</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-title bash">bash — Git repo</span><button class="code-copy" onclick="copyCode(this)">📋</button></div>
+<pre class="code-content"><code><span class="kw">cd</span> ~/Desktop/ARTI_Universal_Platform
+git init
+git add .
+git commit -m <span class="str">"feat: Initial arti_construction database architecture"</span>
+git remote add origin https://github.com/Ttariyel-1954/arti-universal-platform.git
+git push -u origin main</code></pre>
+  </div>
+</section>
+
+<section>
+  <h2>🎉 Dərs tamamlandı</h2>
+  <p>Tariyel müəllim, bu dərs <strong>memarlıq əsasıdır</strong>. Növbəti mesajda bütün SQL faylları, seed data və yeni app.R hazırlayacağıq.</p>
+  
+  <p style="text-align: center; margin-top: 2rem; font-size: 1.1rem; color: var(--text-muted);">
+    © 2026 · Talıbov Tariyel İsmayıl oğlu · ARTI<br>
+    <small>Universal AI Agent Platform · Domain #2: Construction Management</small>
+  </p>
+</section>
+
+</div>
+
+<script>
+function copyCode(button) {
+  const codeBlock = button.closest('.code-block');
+  const code = codeBlock.querySelector('pre.code-content').innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    button.innerHTML = '✓';
+    button.classList.add('copied');
+    setTimeout(() => { button.innerHTML = '📋'; button.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>
