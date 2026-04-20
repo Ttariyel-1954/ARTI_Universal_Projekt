@@ -475,9 +475,6 @@ body { font-family: -apple-system, 'SF Pro Text', sans-serif; }
 # ═══════════════════════════════════════════════════════════════
 # UI
 # ═══════════════════════════════════════════════════════════════
-# Uploads qovluğunu web URL kimi bağla (dashboard-da foto göstərmək üçün)
-shiny::addResourcePath("uploads", path.expand("~/Desktop/ARTI_Universal_Platform/uploads"))
-
 ui <- bs4DashPage(
   title = APP_TITLE,
   header = bs4DashNavbar(
@@ -1631,16 +1628,11 @@ server <- function(input, output, session) {
   # AUDIT TAB — Real-time monitoring
   # ═══════════════════════════════════════════════════════════════
   
-  audit_refresh_trigger <- reactiveTimer(30000)
+  audit_refresh_trigger <- reactiveTimer(10000)
   
   audit_log_data <- reactive({
-    input$audit_refresh  # manual Yenilə
-    
-    # Auto-refresh yalnız seçim yoxsa
-    selected <- isolate(input$audit_tbl_log_rows_selected)
-    if (is.null(selected) || length(selected) == 0) {
-      audit_refresh_trigger()
-    }
+    audit_refresh_trigger()
+    input$audit_refresh
     
     sql <- paste0(
       "SELECT ql.id, ql.username, ql.user_role, ql.action, ql.resource, ",
@@ -1663,9 +1655,7 @@ server <- function(input, output, session) {
   })
   
   output$audit_kpi_today <- renderbs4ValueBox({
-    input$audit_refresh
-    selected <- isolate(input$audit_tbl_log_rows_selected)
-    if (is.null(selected) || length(selected) == 0) audit_refresh_trigger()
+    audit_refresh_trigger()
     n <- safe_query("SELECT COUNT(*) AS n FROM audit.query_log WHERE created_at::date = CURRENT_DATE")
     val <- if (nrow(n) > 0) n$n[1] else 0
     bs4ValueBox(value = format(val, big.mark = ","), 
@@ -1674,9 +1664,7 @@ server <- function(input, output, session) {
   })
   
   output$audit_kpi_users <- renderbs4ValueBox({
-    input$audit_refresh
-    selected <- isolate(input$audit_tbl_log_rows_selected)
-    if (is.null(selected) || length(selected) == 0) audit_refresh_trigger()
+    audit_refresh_trigger()
     n <- safe_query("SELECT COUNT(DISTINCT user_id) AS n FROM audit.query_log WHERE created_at > NOW() - INTERVAL '24 hours'")
     val <- if (nrow(n) > 0) n$n[1] else 0
     bs4ValueBox(value = val, subtitle = "24 saat aktiv user",
@@ -1684,9 +1672,7 @@ server <- function(input, output, session) {
   })
   
   output$audit_kpi_mobile <- renderbs4ValueBox({
-    input$audit_refresh
-    selected <- isolate(input$audit_tbl_log_rows_selected)
-    if (is.null(selected) || length(selected) == 0) audit_refresh_trigger()
+    audit_refresh_trigger()
     n <- safe_query("SELECT COUNT(*) AS n FROM audit.query_log WHERE source = 'mobile' AND created_at > NOW() - INTERVAL '24 hours'")
     val <- if (nrow(n) > 0) n$n[1] else 0
     bs4ValueBox(value = val, subtitle = "Mobil (24s)",
@@ -1702,9 +1688,7 @@ server <- function(input, output, session) {
   })
   
   output$audit_plot_hourly <- renderPlotly({
-    input$audit_refresh
-    selected <- isolate(input$audit_tbl_log_rows_selected)
-    if (is.null(selected) || length(selected) == 0) audit_refresh_trigger()
+    audit_refresh_trigger()
     d <- safe_query("SELECT EXTRACT(HOUR FROM created_at)::INT AS hour, COUNT(*) AS n FROM audit.query_log WHERE created_at::date = CURRENT_DATE GROUP BY EXTRACT(HOUR FROM created_at) ORDER BY hour")
     if (nrow(d) == 0) return(plotly_empty())
     plot_ly(d, x = ~hour, y = ~n, type = "bar",
@@ -1789,210 +1773,6 @@ server <- function(input, output, session) {
         backgroundColor = styleEqual(
           c("success","failed","locked"),
           c("#d1fae5","#fee2e2","#fef3c7")))
-  })
-  
-  # ═══ DETAIL PANEL — setir secilende acilir ═══
-  output$audit_detail_view <- renderUI({
-    sel <- input$audit_tbl_log_rows_selected
-    
-    if (is.null(sel) || length(sel) == 0) {
-      return(div(style = "padding: 30px; text-align: center; color: #94a3b8;",
-                 tags$p(style = "font-size: 16px;",
-                        "Yuxardakı cədvəldən bir sətri seçin — bütün məlumat burada görünəcək")))
-    }
-    
-    d <- audit_log_data()
-    if (nrow(d) == 0 || sel[1] > nrow(d)) return(NULL)
-    row <- d[sel[1], ]
-    
-    # Əsas məlumatı tap
-    content_data <- NULL
-    attachments <- data.frame()
-    parent_t <- NULL
-    
-    if (!is.null(row$action) && row$action == "INSERT" && 
-        !is.null(row$resource) && !is.na(row$resource)) {
-      
-      uname <- row$username
-      res <- row$resource
-      
-      if (res == "daily_report") {
-        parent_t <- "daily_reports"
-        content_data <- safe_query(paste0(
-          "SELECT dr.*, r.name_az AS region_name ",
-          "FROM construction.daily_reports dr ",
-          "LEFT JOIN audit.users u ON dr.worker_id = u.id ",
-          "LEFT JOIN geo.regions r ON dr.region_id = r.id ",
-          "WHERE u.username = '", uname, "' ",
-          "ORDER BY dr.created_at DESC LIMIT 1"
-        ))
-      } else if (res == "inspections") {
-        parent_t <- "inspections"
-        content_data <- safe_query(paste0(
-          "SELECT * FROM construction.inspections ",
-          "WHERE report_text LIKE '%[Mobile by ", uname, "]%' ",
-          "ORDER BY inspection_date DESC LIMIT 1"
-        ))
-      } else if (res == "complaints") {
-        parent_t <- "citizen_complaints"
-        content_data <- safe_query(paste0(
-          "SELECT * FROM construction.citizen_complaints ",
-          "WHERE text LIKE '%[Mobile by ", uname, "]%' ",
-          "ORDER BY complaint_date DESC LIMIT 1"
-        ))
-      } else if (res == "material_transaction") {
-        parent_t <- "material_transactions"
-        content_data <- safe_query(paste0(
-          "SELECT mt.id, mt.transaction_type, mt.quantity, ",
-          "       mt.unit_price, mt.total_amount, mt.transaction_date, ",
-          "       mt.notes, mt.reference_number, ",
-          "       m.name_az AS material, m.unit, ",
-          "       w.name AS warehouse, w.code AS warehouse_code ",
-          "FROM inventory.material_transactions mt ",
-          "LEFT JOIN inventory.materials m ON mt.material_id = m.id ",
-          "LEFT JOIN inventory.warehouses w ON mt.warehouse_id = w.id ",
-          "WHERE mt.notes LIKE '%[Mobile by ", uname, "]%' ",
-          "ORDER BY mt.transaction_date DESC LIMIT 1"
-        ))
-      } else if (res == "attachments") {
-        parent_t <- NULL
-        content_data <- safe_query(paste0(
-          "SELECT a.id, a.parent_table, a.parent_id, a.attachment_type, ",
-          "       a.filename, a.stored_name, a.file_path, ",
-          "       a.file_size, a.mime_type, a.created_at ",
-          "FROM construction.attachments a ",
-          "LEFT JOIN audit.users u ON a.uploaded_by = u.id ",
-          "WHERE u.username = '", uname, "' ",
-          "ORDER BY a.created_at DESC LIMIT 1"
-        ))
-      }
-      
-      if (!is.null(content_data) && nrow(content_data) > 0 && !is.null(parent_t)) {
-        attachments <- safe_query(paste0(
-          "SELECT * FROM construction.v_attachments_full ",
-          "WHERE parent_table = '", parent_t, "' ",
-          "AND parent_id = ", content_data$id[1]
-        ))
-      }
-    }
-    
-    # UI qur
-    tagList(
-      # Metadata
-      div(style = "background: linear-gradient(135deg, #f0f9ff, #eff6ff); padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #0369a1;",
-        h4(style = "color: #0369a1; margin-top: 0; margin-bottom: 15px;",
-           paste0(row$action, " — ", ifelse(is.na(row$resource), "?", row$resource))),
-        div(style = "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;",
-          div(tags$strong("İstifadəçi: "), row$username),
-          div(tags$strong("Rol: "), row$user_role),
-          div(tags$strong("Mənbə: "), row$source),
-          div(tags$strong("IP: "), as.character(row$ip_address)),
-          div(tags$strong("Vaxt: "), as.character(row$vaxt)),
-          div(tags$strong("Status: "), row$status)
-        )
-      ),
-      
-      # Əsas məzmun
-      if (!is.null(content_data) && nrow(content_data) > 0) {
-        cd <- content_data[1, ]
-        skip_cols <- c("id", "created_at", "updated_at", "worker_id", 
-                       "region_id", "project_id", "inspector_id", "school_id",
-                       "approved_by", "reviewed_by")
-        
-        items <- list()
-        for (col_name in names(cd)) {
-          if (col_name %in% skip_cols) next
-          val <- cd[[col_name]]
-          if (is.null(val)) next
-          if (length(val) == 1 && is.na(val)) next
-          if (is.character(val) && length(val) == 1 && val == "") next
-          
-          val_text <- as.character(val)
-          if (nchar(val_text) > 300) val_text <- paste0(substr(val_text, 1, 300), "...")
-          
-          items[[length(items) + 1]] <- div(
-            style = "padding: 10px 12px; border-bottom: 1px solid #f1f5f9;",
-            tags$strong(style = "color: #475569;", paste0(col_name, ": ")),
-            tags$span(style = "color: #0f172a;", val_text)
-          )
-        }
-        
-        div(style = "background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px;",
-          h4(style = "color: #0369a1; margin-top: 0; margin-bottom: 10px;", "📝 Əsas məzmun"),
-          do.call(tagList, items)
-        )
-      } else if (!is.null(row$action) && row$action %in% c("LOGIN", "LOGOUT")) {
-        div(style = "background: #eff6ff; border-radius: 12px; padding: 20px; text-align: center;",
-          tags$p(style = "margin: 0; color: #1e40af;",
-                 "Sessiya əməliyyatı — əlavə məzmun yoxdur"))
-      } else {
-        div(style = "padding: 20px; color: #94a3b8; text-align: center; font-style: italic;",
-          "Bu əməliyyat üçün əlavə məzmun tapılmadı")
-      },
-      
-      # Fayllar
-      if (nrow(attachments) > 0) {
-        file_items <- lapply(seq_len(nrow(attachments)), function(i) {
-          a <- attachments[i, ]
-          div(style = "display: flex; align-items: center; gap: 15px; padding: 12px; background: white; border-radius: 10px; border-left: 4px solid #10b981; margin-bottom: 8px;",
-            div(style = "font-size: 32px;", a$icon),
-            div(style = "flex: 1;",
-              div(style = "font-weight: 700; color: #065f46;", a$filename),
-              div(style = "color: #64748b; font-size: 12px;",
-                paste0(round(a$size_kb, 1), " KB · ", a$mime_type))
-            ),
-            tags$a(href = paste0("file://", a$file_path),
-                   target = "_blank",
-                   class = "btn btn-success btn-sm",
-                   style = "font-weight: 600;",
-                   "Aç")
-          )
-        })
-        
-        div(style = "background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 20px;",
-          h4(style = "color: #065f46; margin-top: 0; margin-bottom: 10px;",
-             paste0("📎 Əlavələr (", nrow(attachments), " fayl)")),
-          do.call(tagList, file_items)
-        )
-      } else NULL,
-      
-      # Faylı aç düyməsi (yalnız attachments resurs üçün)
-      if (!is.null(row$resource) && !is.na(row$resource) && 
-          row$resource == "attachments" && 
-          !is.null(content_data) && nrow(content_data) > 0 &&
-          "file_path" %in% names(content_data)) {
-        fp <- as.character(content_data$file_path[1])
-        fn <- as.character(content_data$filename[1])
-        mt <- as.character(content_data$mime_type[1])
-        fs <- content_data$file_size[1]
-        
-        uploads_base <- path.expand("~/Desktop/ARTI_Universal_Platform/uploads")
-        web_url <- if (startsWith(fp, uploads_base)) {
-          paste0("/uploads/", substring(fp, nchar(uploads_base) + 2))
-        } else {
-          ""
-        }
-        
-        icon_c <- if (grepl("^image/", mt)) "🖼" else if (mt == "application/pdf") "📄" else "📎"
-        
-        div(style = "background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 20px; margin-top: 15px;",
-          h4(style = "color: #065f46; margin-top: 0; margin-bottom: 10px;", "📎 Fayl"),
-          div(style = "display: flex; align-items: center; gap: 15px; padding: 12px; background: white; border-radius: 10px; border-left: 4px solid #10b981;",
-            div(style = "font-size: 32px;", icon_c),
-            div(style = "flex: 1;",
-              div(style = "font-weight: 700; color: #065f46;", fn),
-              div(style = "color: #64748b; font-size: 12px;",
-                paste0(round(fs / 1024, 1), " KB . ", mt))
-            ),
-            tags$a(href = web_url,
-                   target = "_blank",
-                   class = "btn btn-success btn-sm",
-                   style = "font-weight: 600;",
-                   "Aç")
-          )
-        )
-      } else NULL
-    )
   })
   
   output$audit_tbl_failed <- renderDT({

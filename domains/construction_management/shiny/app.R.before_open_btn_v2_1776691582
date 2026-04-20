@@ -1954,43 +1954,6 @@ server <- function(input, output, session) {
              paste0("📎 Əlavələr (", nrow(attachments), " fayl)")),
           do.call(tagList, file_items)
         )
-      } else NULL,
-      
-      # Faylı aç düyməsi (yalnız attachments resurs üçün)
-      if (!is.null(row$resource) && !is.na(row$resource) && 
-          row$resource == "attachments" && 
-          !is.null(content_data) && nrow(content_data) > 0 &&
-          "file_path" %in% names(content_data)) {
-        fp <- as.character(content_data$file_path[1])
-        fn <- as.character(content_data$filename[1])
-        mt <- as.character(content_data$mime_type[1])
-        fs <- content_data$file_size[1]
-        
-        uploads_base <- path.expand("~/Desktop/ARTI_Universal_Platform/uploads")
-        web_url <- if (startsWith(fp, uploads_base)) {
-          paste0("/uploads/", substring(fp, nchar(uploads_base) + 2))
-        } else {
-          ""
-        }
-        
-        icon_c <- if (grepl("^image/", mt)) "🖼" else if (mt == "application/pdf") "📄" else "📎"
-        
-        div(style = "background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 20px; margin-top: 15px;",
-          h4(style = "color: #065f46; margin-top: 0; margin-bottom: 10px;", "📎 Fayl"),
-          div(style = "display: flex; align-items: center; gap: 15px; padding: 12px; background: white; border-radius: 10px; border-left: 4px solid #10b981;",
-            div(style = "font-size: 32px;", icon_c),
-            div(style = "flex: 1;",
-              div(style = "font-weight: 700; color: #065f46;", fn),
-              div(style = "color: #64748b; font-size: 12px;",
-                paste0(round(fs / 1024, 1), " KB . ", mt))
-            ),
-            tags$a(href = web_url,
-                   target = "_blank",
-                   class = "btn btn-success btn-sm",
-                   style = "font-weight: 600;",
-                   "Aç")
-          )
-        )
       } else NULL
     )
   })
