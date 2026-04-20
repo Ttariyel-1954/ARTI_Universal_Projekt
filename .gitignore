@@ -49,3 +49,8 @@ Claude_Modei_Təmir_tikinti/
 *.tmp
 *.swp
 *~
+
+# Əlavə backup pattern-lər
+app.R.broken_*
+app.R.with_auth_*
+*.broken_*
