@@ -1,0 +1,2169 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARTI Universal Platform — İstifadəçi Təlimatı</title>
+
+<!-- Fonts: distinctive pairing -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-primary: #fafaf7;
+  --bg-secondary: #f5f3ee;
+  --bg-tertiary: #efede6;
+  --bg-code: #1a1a1a;
+  --bg-code-light: #2a2a2a;
+  
+  --ink-primary: #1a1a1a;
+  --ink-secondary: #4a4a4a;
+  --ink-muted: #8b8b8b;
+  --ink-light: #c0c0c0;
+  
+  --accent: #0f5132;           /* deep emerald */
+  --accent-light: #198754;
+  --accent-bg: #d1e7dd;
+  --accent-soft: #ecfdf5;
+  
+  --warm: #9a4d29;             /* terracotta */
+  --warm-soft: #fef5eb;
+  --warm-bg: #fed7aa;
+  
+  --danger: #9f1239;
+  --danger-soft: #fef2f2;
+  
+  --serif: 'Fraunces', Georgia, serif;
+  --sans: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', 'SF Mono', monospace;
+  
+  --max-width: 880px;
+  --border: 1px solid rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg-primary);
+  color: var(--ink-primary);
+  line-height: 1.7;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Paper-like texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(154,77,41,0.015) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(15,81,50,0.015) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.content { position: relative; z-index: 1; }
+
+/* ═══ HERO ═══ */
+.hero {
+  background: linear-gradient(135deg, #0f5132 0%, #198754 100%);
+  color: white;
+  padding: 80px 32px 100px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -20%;
+  width: 80%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero::after {
+  content: 'ARTI';
+  position: absolute;
+  top: 20px;
+  right: 40px;
+  font-family: var(--serif);
+  font-size: 200px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.05);
+  line-height: 1;
+  letter-spacing: -8px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-meta {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.hero-meta span:not(:last-child)::after {
+  content: '·';
+  margin-left: 16px;
+  color: rgba(255,255,255,0.4);
+}
+
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+
+.hero h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(255,255,255,0.85);
+}
+
+.hero-subtitle {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255,255,255,0.85);
+  max-width: 580px;
+  line-height: 1.5;
+}
+
+.hero-badges {
+  display: flex;
+  gap: 10px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+}
+
+.hero-badge {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--mono);
+}
+
+/* ═══ MAIN CONTENT ═══ */
+.main {
+  max-width: var(--max-width);
+  margin: -40px auto 0;
+  padding: 0 32px 80px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ═══ TABLE OF CONTENTS ═══ */
+.toc {
+  background: white;
+  border-radius: 16px;
+  padding: 32px 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  margin-bottom: 60px;
+  border-top: 4px solid var(--accent);
+}
+
+.toc h2 {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+
+.toc ol {
+  list-style: none;
+  counter-reset: toc-counter;
+  column-count: 2;
+  column-gap: 40px;
+}
+
+.toc li {
+  counter-increment: toc-counter;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.08);
+  break-inside: avoid;
+}
+
+.toc li::before {
+  content: counter(toc-counter, decimal-leading-zero);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--warm);
+  margin-right: 12px;
+  font-weight: 700;
+}
+
+.toc a {
+  color: var(--ink-primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  transition: color 0.15s;
+}
+
+.toc a:hover { color: var(--accent); }
+
+/* ═══ SECTIONS ═══ */
+section {
+  margin-bottom: 80px;
+  scroll-margin-top: 20px;
+}
+
+.section-marker {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--warm);
+  margin-bottom: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-marker::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--warm) 0%, transparent 100%);
+  max-width: 100px;
+}
+
+h2.section-title {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  color: var(--ink-primary);
+}
+
+h2.section-title em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--accent);
+}
+
+.section-lead {
+  font-family: var(--serif);
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--ink-secondary);
+  margin-bottom: 40px;
+  font-weight: 300;
+  max-width: 680px;
+}
+
+.section-lead strong {
+  color: var(--ink-primary);
+  font-weight: 600;
+}
+
+h3 {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  margin: 36px 0 16px;
+  letter-spacing: -0.01em;
+  color: var(--ink-primary);
+}
+
+h3 .num {
+  color: var(--warm);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  margin-right: 12px;
+  vertical-align: 6px;
+}
+
+h4 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 28px 0 12px;
+  color: var(--ink-primary);
+  letter-spacing: -0.01em;
+}
+
+p { margin-bottom: 16px; }
+
+strong { color: var(--ink-primary); font-weight: 600; }
+
+em { color: var(--accent); font-style: italic; }
+
+/* ═══ CODE BLOCKS ═══ */
+.code-wrap {
+  position: relative;
+  margin: 20px 0 28px;
+  background: var(--bg-code);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+.code-header {
+  background: var(--bg-code-light);
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.code-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #8b8b8b;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.code-label::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+}
+
+.copy-btn {
+  background: rgba(255,255,255,0.08);
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.copy-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.copy-btn.copied {
+  background: var(--accent-light);
+  color: white;
+  border-color: var(--accent-light);
+}
+
+pre {
+  padding: 20px 24px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: #e5e7eb;
+}
+
+pre code { background: transparent; color: inherit; padding: 0; }
+
+/* inline code */
+p code, li code, td code {
+  background: var(--bg-tertiary);
+  color: var(--warm);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ═══ CALLOUTS ═══ */
+.callout {
+  margin: 24px 0;
+  padding: 20px 24px;
+  border-radius: 12px;
+  border-left: 4px solid;
+  position: relative;
+}
+
+.callout-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.callout-body { font-size: 15px; line-height: 1.65; }
+
+.callout.tip {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.callout.tip .callout-title { color: var(--accent); }
+
+.callout.warning {
+  background: var(--warm-soft);
+  border-color: var(--warm);
+}
+.callout.warning .callout-title { color: var(--warm); }
+
+.callout.danger {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+.callout.danger .callout-title { color: var(--danger); }
+
+.callout.note {
+  background: var(--bg-secondary);
+  border-color: var(--ink-muted);
+}
+.callout.note .callout-title { color: var(--ink-primary); }
+
+/* ═══ STEP LIST ═══ */
+.steps {
+  counter-reset: step;
+  list-style: none;
+  margin: 20px 0 30px;
+}
+
+.steps > li {
+  counter-increment: step;
+  position: relative;
+  padding: 16px 16px 16px 64px;
+  margin-bottom: 12px;
+  background: white;
+  border-radius: 10px;
+  border: var(--border);
+}
+
+.steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(15,81,50,0.25);
+}
+
+.steps strong { color: var(--accent); }
+
+/* ═══ TABLES ═══ */
+.table-wrap {
+  overflow-x: auto;
+  margin: 20px 0;
+  border-radius: 10px;
+  border: var(--border);
+  background: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th {
+  background: var(--bg-tertiary);
+  font-family: var(--serif);
+  font-weight: 700;
+  text-align: left;
+  padding: 14px 18px;
+  color: var(--ink-primary);
+  border-bottom: 2px solid var(--ink-light);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  vertical-align: top;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--accent-soft); }
+
+/* ═══ ARCHITECTURE DIAGRAM ═══ */
+.arch-diagram {
+  background: linear-gradient(135deg, #0a2e1a 0%, #0f5132 50%, #1a5a3f 100%);
+  padding: 48px 32px;
+  border-radius: 20px;
+  margin: 32px 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+.arch-diagram::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.arch-diagram pre {
+  background: transparent;
+  padding: 0;
+  position: relative;
+  z-index: 2;
+  color: #e5f7ed;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ═══ KEY COMBO ═══ */
+kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  background: linear-gradient(180deg, #fff 0%, #e5e7eb 100%);
+  border: 1px solid var(--ink-light);
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+  color: var(--ink-primary);
+  vertical-align: middle;
+  margin: 0 2px;
+}
+
+/* ═══ SCREENSHOT / FIGURE ═══ */
+.figure {
+  margin: 32px 0;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  border: var(--border);
+}
+
+.figure-caption {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-muted);
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* ═══ STAT CARDS ═══ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 28px 0;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  border: var(--border);
+  text-align: center;
+  transition: transform 0.15s;
+}
+
+.stat-card:hover { transform: translateY(-2px); }
+
+.stat-value {
+  font-family: var(--serif);
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+/* ═══ FLOWCHART ═══ */
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 24px 0;
+}
+
+.flow-box {
+  background: white;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+}
+
+.flow-box.highlight {
+  background: var(--accent-soft);
+  border-color: var(--accent-light);
+}
+
+.flow-box .flow-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.flow-arrow {
+  text-align: center;
+  color: var(--accent);
+  font-size: 20px;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ═══ FAQ ═══ */
+.faq-item {
+  background: white;
+  border: var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 10px;
+}
+
+.faq-q {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--ink-primary);
+  margin-bottom: 8px;
+  display: flex;
+  gap: 10px;
+}
+
+.faq-q::before {
+  content: 'S';
+  color: var(--warm);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--warm-soft);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.faq-a {
+  font-size: 15px;
+  color: var(--ink-secondary);
+  padding-left: 34px;
+  line-height: 1.6;
+}
+
+/* ═══ FOOTER ═══ */
+footer {
+  background: var(--bg-code);
+  color: #a1a1a1;
+  padding: 48px 32px;
+  margin-top: 80px;
+  text-align: center;
+}
+
+footer p { margin-bottom: 8px; font-size: 13px; }
+
+footer .brand {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+}
+
+footer .mono {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #64748b;
+  margin-top: 20px;
+}
+
+/* ═══ UTILITIES ═══ */
+.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--ink-light) 50%, transparent 100%);
+  margin: 60px 0;
+}
+
+.mono { font-family: var(--mono); }
+
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--mono);
+  letter-spacing: 0.5px;
+}
+
+.pill.warm {
+  background: var(--warm-soft);
+  color: var(--warm);
+}
+
+.pill.danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Print styles */
+@media print {
+  .hero { padding: 40px 20px; }
+  .copy-btn { display: none; }
+  section { page-break-inside: avoid; }
+}
+
+/* Small screens */
+@media (max-width: 640px) {
+  .hero { padding: 60px 20px 80px; }
+  .hero::after { font-size: 140px; }
+  .main { padding: 0 20px 60px; }
+  .toc { padding: 24px; }
+  .toc ol { column-count: 1; }
+  .steps > li { padding-left: 58px; }
+  pre { font-size: 12px; padding: 16px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+
+<body>
+<div class="content">
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-meta">
+      <span>ARTI Universal Platform</span>
+      <span>v2.0</span>
+      <span>Aprel 2026</span>
+    </div>
+    <h1>Tam İstifadə<br><em>Təlimatı</em></h1>
+    <p class="hero-subtitle">
+      Bölgə mobil tətbiqindən idarəetmə panelinə — kompüterin açılışından 
+      başlayaraq, hər əmrin hər detalı ilə, gündəlik iş axını üçün şəxsi əl kitabı.
+    </p>
+    <div class="hero-badges">
+      <span class="hero-badge">Regional App v2.0</span>
+      <span class="hero-badge">Dashboard</span>
+      <span class="hero-badge">PostgreSQL</span>
+      <span class="hero-badge">Tailscale</span>
+      <span class="hero-badge">Terminal Commands</span>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+
+<!-- ═══ TABLE OF CONTENTS ═══ -->
+<div class="toc">
+  <h2>Mündəricat</h2>
+  <ol>
+    <li><a href="#arxitektura">Sistemin arxitekturası və komponentləri</a></li>
+    <li><a href="#acilis">Kompüterin açılışı və hazırlıq</a></li>
+    <li><a href="#database">PostgreSQL-in başladılması</a></li>
+    <li><a href="#tailscale">Tailscale şəbəkəsinin yoxlanılması</a></li>
+    <li><a href="#regional-start">Regional app-ın arxa planda işə salınması</a></li>
+    <li><a href="#dashboard-start">Dashboard-ın RStudio-da açılması</a></li>
+    <li><a href="#test">Sistem testi — hər iki tərəfdən</a></li>
+    <li><a href="#mobile">Telefonda istifadə — hər addım</a></li>
+    <li><a href="#dashboard-workflow">Dashboard-da gündəlik iş axını</a></li>
+    <li><a href="#monitoring">Real-time monitorinq və audit</a></li>
+    <li><a href="#stop">Sistemin düzgün dayandırılması</a></li>
+    <li><a href="#troubleshoot">Problemlər və həlləri</a></li>
+    <li><a href="#cheatsheet">Tezyaddaş — vacib əmrlər</a></li>
+    <li><a href="#faq">Tez-tez verilən suallar</a></li>
+  </ol>
+</div>
+
+<!-- ═══ 1. ARXITEKTURA ═══ -->
+<section id="arxitektura">
+  <div class="section-marker">Fəsil 1</div>
+  <h2 class="section-title">Sistemin <em>arxitekturası</em></h2>
+  <p class="section-lead">
+    ARTI Universal Platform — bölgə işçiləri üçün mobil tətbiq və mərkəzi idarəçilik 
+    üçün dashboard-dan ibarət <strong>iki hissəli sistemdir</strong>. Hər iki tərəf 
+    eyni məlumat bazası ilə işləyir, real vaxt rejimində sinxronlaşır.
+  </p>
+
+  <div class="arch-diagram">
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│                     ARTI SİSTEMİ — v2.0                      │
+└─────────────────────────────────────────────────────────────┘
+
+   📱 BÖLGƏ İŞÇİLƏRİ                     💻 SİZ (ADMİN)
+        iPhone                               Mac
+          │                                   │
+          │ Tailscale VPN                     │ localhost
+          │ http://100.95.25.77:3839          │ http://127.0.0.1:3838
+          ▼                                   ▼
+    ┌──────────────┐                    ┌──────────────┐
+    │  REGIONAL    │                    │  DASHBOARD   │
+    │   APP.R      │                    │   APP.R      │
+    │  (arxa plan) │                    │  (RStudio)   │
+    │  port 3839   │                    │  port 3838   │
+    └──────┬───────┘                    └──────┬───────┘
+           │                                   │
+           │         PostgreSQL                │
+           │      arti_construction            │
+           ▼                                   ▼
+    ╔═══════════════════════════════════════════════╗
+    ║          🗄  9 schema · 40+ cədvəl             ║
+    ║                                                ║
+    ║  audit · construction · finance · geo         ║
+    ║  hr · infra · inventory · public · reporting  ║
+    ╚═══════════════════════════════════════════════╝
+                         │
+                         ▼
+                   Real-time audit log
+                   Hər əməliyyat qeydə alınır
+</pre>
+  </div>
+
+  <h3><span class="num">1.1</span>İki tərəfin rolu</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 20%;">Komponent</th>
+          <th style="width: 20%;">İstifadəçi</th>
+          <th style="width: 30%;">Məqsəd</th>
+          <th style="width: 30%;">Port / Ünvan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Regional App</strong><br><span class="pill">mobile</span></td>
+          <td>10 bölgə işçisi<br>(rw_01 … rw_10)</td>
+          <td>Sahədə məlumat daxil etmək: yoxlama, şikayət, gündəlik hesabat, material əməliyyatları</td>
+          <td><code>http://100.95.25.77:3839</code><br>(Tailscale ilə telefondan)</td>
+        </tr>
+        <tr>
+          <td><strong>Dashboard</strong><br><span class="pill warm">admin</span></td>
+          <td>Siz — admin</td>
+          <td>Bütün bölgədən gələn məlumatları izləmək, audit, hesabatlar, analiz</td>
+          <td><code>http://127.0.0.1:3838</code><br>(yalnız sizin Mac-da)</td>
+        </tr>
+        <tr>
+          <td><strong>PostgreSQL</strong><br><span class="pill">database</span></td>
+          <td>Sistem (görünmür)</td>
+          <td>Bütün məlumatları saxlayır — ortaq mənbə</td>
+          <td><code>localhost:5432</code></td>
+        </tr>
+        <tr>
+          <td><strong>Tailscale VPN</strong><br><span class="pill">network</span></td>
+          <td>Sistem (arxa planda)</td>
+          <td>Telefonu Mac-a təhlükəsiz birləşdirir (hətta kənar WiFi-dən belə)</td>
+          <td>Mac IP: <code>100.95.25.77</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">💡 Əsas prinsip</div>
+    <div class="callout-body">
+      <strong>Hər iki app eyni bazaya yazır/oxuyur.</strong> Yəni bölgə işçisi telefonda 
+      yoxlama qeydə alanda, o məlumat dərhal PostgreSQL-ə gedir. Siz dashboard-da 
+      Audit Log tab-ını açsanız, 30 saniyə ərzində həmin qeydi görəcəksiniz.
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 2. ACILIS ═══ -->
+<section id="acilis">
+  <div class="section-marker">Fəsil 2</div>
+  <h2 class="section-title">Kompüterin <em>açılışı</em> və hazırlıq</h2>
+  <p class="section-lead">
+    Hər səhər kompüterinizi açdıqdan sonra, sistemin işə salınması üçün <strong>4 addım</strong> var. 
+    Bu ardıcıllıqla getsəniz, bütün sistem 2-3 dəqiqədə tam operativ olacaq.
+  </p>
+
+  <h3><span class="num">2.1</span>Sabah — Mac-ı açın</h3>
+  <p>
+    Mac-ı açdıqdan sonra, şifrənizi daxil edin və iş masasına çıxın. 
+    Heç bir proqram hələ işləmir — biz onları ardıcıl olaraq işə salacağıq.
+  </p>
+
+  <h3><span class="num">2.2</span>Terminal-ı açın</h3>
+  <p>
+    Terminal tətbiqini açmaq üçün:
+  </p>
+  <ul class="steps">
+    <li><strong>Spotlight</strong> (<kbd>⌘</kbd> + <kbd>Space</kbd>) açın</li>
+    <li>"Terminal" yazın və <kbd>Enter</kbd> basın</li>
+    <li>Qara fon, mətn kursoru görünməlidir — Terminal hazırdır</li>
+  </ul>
+
+  <h3><span class="num">2.3</span>İlk yoxlama — sistem sağlamlığı</h3>
+  <p>Aşağıdakı əmri kopyalayıb Terminal-da <kbd>Enter</kbd> basın:</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Sistem yoxlanışı</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>echo "═══ 1. Günün tarixi: ═══"
+date
+
+echo ""
+echo "═══ 2. Mac-ın adı: ═══"
+hostname
+
+echo ""
+echo "═══ 3. PostgreSQL statusu: ═══"
+pg_isready -h localhost -p 5432 && echo "✅ PostgreSQL hazırdır" || echo "❌ PostgreSQL işləmir"
+
+echo ""
+echo "═══ 4. Tailscale IP: ═══"
+/Applications/Tailscale.app/Contents/MacOS/Tailscale ip -4 2>/dev/null || echo "⚠️ Tailscale işləmir"
+
+echo ""
+echo "═══ 5. ARTI qovluğu: ═══"
+ls -d ~/Desktop/ARTI_Universal_Platform 2>/dev/null && echo "✅ Qovluq tapıldı" || echo "❌ Qovluq yoxdur"</code></pre>
+  </div>
+
+  <h4>Gözlənilən cavab:</h4>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Normal çıxış</span>
+    </div>
+<pre><code>═══ 1. Günün tarixi: ═══
+Bazar ertəsi, 20 Aprel 2026, 09:00:00
+
+═══ 2. Mac-ın adı: ═══
+Tariyels-MacBook-Pro
+
+═══ 3. PostgreSQL statusu: ═══
+localhost:5432 - accepting connections
+✅ PostgreSQL hazırdır
+
+═══ 4. Tailscale IP: ═══
+100.95.25.77
+
+═══ 5. ARTI qovluğu: ═══
+/Users/royatalibova/Desktop/ARTI_Universal_Platform
+✅ Qovluq tapıldı</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-title">⚠️ Əgər hansısa addımda ❌ görsəniz</div>
+    <div class="callout-body">
+      Bölmə 12 "Problemlər və həlləri"-nə keçin. Hər halın çözümü ayrıca 
+      təsvir edilib. <strong>Heç nəyi icra etməyin</strong> — əvvəlcə problemi həll edin.
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 3. DATABASE ═══ -->
+<section id="database">
+  <div class="section-marker">Fəsil 3</div>
+  <h2 class="section-title">PostgreSQL-in <em>başladılması</em></h2>
+  <p class="section-lead">
+    PostgreSQL adətən Mac açıldıqda avtomatik işə düşür. Əgər aşağıdakı yoxlama 
+    "hazırdır" göstərirsə — bu addımı keçə bilərsiniz.
+  </p>
+
+  <h3><span class="num">3.1</span>Statusu yoxlayın</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — PostgreSQL status</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>pg_isready -h localhost -p 5432</code></pre>
+  </div>
+
+  <h3><span class="num">3.2</span>Əgər işləmirsə — başladın</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — PostgreSQL başlat</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>brew services start postgresql@18</code></pre>
+  </div>
+
+  <p>5-10 saniyə gözləyin, sonra yenidən yoxlayın:</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Yoxlama</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>sleep 5 && pg_isready -h localhost -p 5432</code></pre>
+  </div>
+
+  <h3><span class="num">3.3</span>Bazaya test qoşulma</h3>
+  <p>Əmin olaq ki, arti_construction bazası əlçatandır:</p>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — DB test</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>psql arti_construction -c "SELECT 
+  (SELECT COUNT(*) FROM audit.users) AS users,
+  (SELECT COUNT(*) FROM construction.projects) AS projects,
+  (SELECT COUNT(*) FROM inventory.materials) AS materials,
+  (SELECT COUNT(*) FROM audit.query_log) AS audit_entries;"</code></pre>
+  </div>
+
+  <p>Gözlənilən cavab — sayların artdığını görəcəksiniz gündən-günə:</p>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">13</div>
+      <div class="stat-label">İstifadəçi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">120</div>
+      <div class="stat-label">Layihə</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">204</div>
+      <div class="stat-label">Material</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">8k+</div>
+      <div class="stat-label">Audit qeyd</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 4. TAILSCALE ═══ -->
+<section id="tailscale">
+  <div class="section-marker">Fəsil 4</div>
+  <h2 class="section-title">Tailscale <em>şəbəkəsinin</em> yoxlanışı</h2>
+  <p class="section-lead">
+    Tailscale — sizin Mac ilə bölgə işçilərinin telefonlarını birləşdirən 
+    təhlükəsiz <strong>virtual şəbəkədir</strong>. Hər iki cihaz internet olan yerdə 
+    bir-birini görə bilir, amma kənar şəxs görə bilmir.
+  </p>
+
+  <h3><span class="num">4.1</span>Tailscale app-ını yoxlayın</h3>
+  <p>
+    Menu bar-a (ekranın yuxarı sağ küncü) baxın. Tailscale icon-u görməlisiniz. 
+    Əgər yoxdursa:
+  </p>
+  <ul class="steps">
+    <li><strong>Applications</strong> qovluğunu açın (Finder)</li>
+    <li>Tailscale app-ını tapıb işə salın</li>
+    <li>Menu bar-da icon görünəcək</li>
+    <li>Icon-a klik edib <strong>"Connect"</strong> olmadığını yoxlayın</li>
+  </ul>
+
+  <h3><span class="num">4.2</span>Mac-ın Tailscale IP-sini təsdiq edin</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Tailscale IP</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>/Applications/Tailscale.app/Contents/MacOS/Tailscale ip -4</code></pre>
+  </div>
+  <p>Bu IP həmişə eynidir: <code>100.95.25.77</code>. Bu ünvanı <strong>bölgə işçiləri öz telefonlarına yazırlar</strong>.</p>
+
+  <div class="callout note">
+    <div class="callout-title">📝 Bölgə işçilərinin cihazları</div>
+    <div class="callout-body">
+      Hər bölgə işçisinin telefonunda Tailscale app quraşdırılmalıdır və 
+      <strong>eyni hesabla</strong> (sizin Tailscale hesabınız) giriş etməlidir. 
+      Bu birdəfəlik konfiqurasiyadır — bölgəyə işə götürüləndə edilir.
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 5. REGIONAL START ═══ -->
+<section id="regional-start">
+  <div class="section-marker">Fəsil 5</div>
+  <h2 class="section-title">Regional app — <em>arxa planda</em> başlat</h2>
+  <p class="section-lead">
+    Regional app — bölgə işçiləri üçündür. Biz onu <strong>arxa planda</strong> işə salırıq ki, 
+    RStudio pəncərəsi dashboard üçün sərbəst qalsın. Terminal bağlansa belə, 
+    regional app işləməyə davam edəcək.
+  </p>
+
+  <h3><span class="num">5.1</span>Əvvəlki proses varmı — yoxlayın</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Təmizləmə</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>cd ~/Desktop/ARTI_Universal_Platform
+
+# Əvvəlki regional proses varmı?
+if [ -f regional.pid ]; then
+  OLD_PID=$(cat regional.pid)
+  echo "⚠️ Əvvəlki PID: $OLD_PID"
+  kill $OLD_PID 2>/dev/null && echo "✅ Dayandırıldı" || echo "ℹ️ Artıq işləmirdi"
+  rm regional.pid
+fi
+
+# Port 3839-da başqa proses varmı?
+PORT_PID=$(lsof -ti:3839)
+if [ -n "$PORT_PID" ]; then
+  echo "⚠️ Port 3839-da proses: $PORT_PID — öldürülür..."
+  kill -9 $PORT_PID 2>/dev/null
+  echo "✅ Port boşaldı"
+else
+  echo "✅ Port 3839 boşdur"
+fi</code></pre>
+  </div>
+
+  <h3><span class="num">5.2</span>Regional app-ı arxa plana salın</h3>
+  <p>
+    Bu əmr <code>nohup</code> istifadə edir — terminal bağlansa belə app işləyir. 
+    Bütün loglar <code>regional.log</code> faylına yazılır.
+  </p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Regional işə sal</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>cd ~/Desktop/ARTI_Universal_Platform/domains/construction_management/regional
+
+nohup Rscript -e "options(shiny.port=3839); options(shiny.host='0.0.0.0'); shiny::runApp('.', launch.browser=FALSE)" > ~/Desktop/ARTI_Universal_Platform/regional.log 2>&1 &
+
+REGIONAL_PID=$!
+echo $REGIONAL_PID > ~/Desktop/ARTI_Universal_Platform/regional.pid
+echo "✅ Regional app PID: $REGIONAL_PID"
+echo "✅ PID yazıldı: regional.pid"
+
+# 10 saniyə gözlə paketlər yüklənsin
+echo ""
+echo "⏳ 10 saniyə gözləyirik..."
+sleep 10
+
+# Yoxla
+echo ""
+echo "═══ Status: ═══"
+if lsof -ti:3839 > /dev/null; then
+  echo "✅ Regional app işləyir (port 3839)"
+  echo ""
+  echo "═══ Son log sətirləri: ═══"
+  tail -8 ~/Desktop/ARTI_Universal_Platform/regional.log
+else
+  echo "❌ Regional app başlaya bilmədi"
+  echo "═══ Log faylına bax: ═══"
+  cat ~/Desktop/ARTI_Universal_Platform/regional.log
+fi</code></pre>
+  </div>
+
+  <h4>Gözlənilən cavab:</h4>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Normal çıxış</span>
+    </div>
+<pre><code>✅ Regional app PID: 12345
+✅ PID yazıldı: regional.pid
+
+⏳ 10 saniyə gözləyirik...
+
+═══ Status: ═══
+✅ Regional app işləyir (port 3839)
+
+═══ Son log sətirləri: ═══
+Loading required package: shiny
+═══ DB Source: localhost (localhost:5432) ═══
+Listening on http://0.0.0.0:3839          ← VACİB!</code></pre>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">✅ "Listening on http://0.0.0.0:3839"</div>
+    <div class="callout-body">
+      Bu mesaj görünəndə Regional app <strong>həm lokal kompüterdən, həm də telefondan</strong> 
+      qoşulmağa hazırdır. <code>0.0.0.0</code> — "bütün şəbəkə interfeyslərindən 
+      qoşulmaq olar" deməkdir.
+    </div>
+  </div>
+
+  <h3><span class="num">5.3</span>Dərhal test</h3>
+  <p>Regional app-ın işlədiyini yoxlamaq üçün Mac-ın brauzerində açın:</p>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Brauzer (Safari / Chrome)</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>http://127.0.0.1:3839</code></pre>
+  </div>
+  <p>Modern login ekranı açılmalıdır. Bu — Mac-dan baxan variantdır.</p>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 6. DASHBOARD START ═══ -->
+<section id="dashboard-start">
+  <div class="section-marker">Fəsil 6</div>
+  <h2 class="section-title">Dashboard — <em>RStudio-da</em> aç</h2>
+  <p class="section-lead">
+    Regional app arxa planda işlədikdən sonra, dashboard-u RStudio-da 
+    <strong>qabaq pəncərədə</strong> açacağıq. Beləliklə, kodla işləmək, debug etmək 
+    və əsas iş yeriniz olacaq.
+  </p>
+
+  <h3><span class="num">6.1</span>RStudio-nu açın</h3>
+  <ul class="steps">
+    <li><strong>Spotlight</strong> (<kbd>⌘</kbd> + <kbd>Space</kbd>)</li>
+    <li>"RStudio" yazın, <kbd>Enter</kbd></li>
+    <li>RStudio pəncərəsi açılır — 4 pəncərə (kod, console, environment, files)</li>
+  </ul>
+
+  <h3><span class="num">6.2</span>Dashboard faylını açın</h3>
+  <p>
+    RStudio-da: <strong>File → Open File...</strong> və ya <kbd>⌘</kbd> + <kbd>O</kbd>
+  </p>
+  <p>Bu yola gedin:</p>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Fayl yolu</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>~/Desktop/ARTI_Universal_Platform/domains/construction_management/shiny/app.R</code></pre>
+  </div>
+  <p><strong>Open</strong> basın. Kod editor-da ~1900 sətir görünəcək.</p>
+
+  <h3><span class="num">6.3</span>Run App basın</h3>
+  <p>Sağ yuxarı küncdə <strong>"Run App"</strong> düyməsi (yaşıl üçbucaq ▶) var. 
+  Klikləyin.</p>
+
+  <div class="callout note">
+    <div class="callout-title">🔧 Run App seçimləri</div>
+    <div class="callout-body">
+      Run App düyməsinin yanında balaca ↓ ox var. Orada:
+      <ul style="margin-left: 20px; margin-top: 8px;">
+        <li><strong>Run in Window</strong> — ayrı pəncərədə</li>
+        <li><strong>Run in Viewer Pane</strong> — RStudio içində (mənim tövsiyəm)</li>
+        <li><strong>Run External</strong> — brauzerdə</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3><span class="num">6.4</span>Dashboard portunu təsdiq edin</h3>
+  <p>R Console-da görəcəksiniz:</p>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">R Console mesajı</span>
+    </div>
+<pre><code>Loading required package: shiny
+
+Listening on http://127.0.0.1:3838</code></pre>
+  </div>
+  <p>
+    <strong>3838</strong> — dashboard portudur. <strong>3839</strong> — regional app portudur. 
+    İkisi fərqli portlardadır, bir-birinə mane olmur.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 7. TEST ═══ -->
+<section id="test">
+  <div class="section-marker">Fəsil 7</div>
+  <h2 class="section-title">Sistem <em>testi</em> — hər iki tərəf</h2>
+  <p class="section-lead">
+    Bu anda iki app işləyir. İndi real-world senario ilə test edirik: 
+    <strong>bir tərəfdən məlumat daxil edib, o biri tərəfdən görməyi</strong>.
+  </p>
+
+  <h3><span class="num">7.1</span>Telefonu test üçün hazırlayın</h3>
+  <ul class="steps">
+    <li>iPhone-da <strong>Tailscale</strong> app-ını açın</li>
+    <li>Toggle yaşıl (aktiv) olduğunu yoxlayın — "Connected" yazır</li>
+    <li>Safari açın</li>
+    <li>Ünvan çubuğuna yazın: <code>http://100.95.25.77:3839</code></li>
+    <li><strong>http</strong> (https YOX!) — əl ilə yazın, Safari avtomatik https-ə dəyişməsin</li>
+    <li><kbd>Go</kbd> / <kbd>Enter</kbd></li>
+  </ul>
+
+  <div class="callout warning">
+    <div class="callout-title">⚠️ Safari https-ə keçirməyə çalışa bilər</div>
+    <div class="callout-body">
+      Əgər "This connection is not private" görsəniz və ya səhifə açılmırsa:
+      <ol style="margin: 8px 0 0 20px;">
+        <li>Ünvan çubuğunu təmizləyin</li>
+        <li>Yenidən <strong>dəqiqliklə</strong> yazın: <code>http://100.95.25.77:3839</code></li>
+        <li>Go basın — bu dəfə açılır</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3><span class="num">7.2</span>Test girişi</h3>
+  <p>Telefonda Regional app açıldı. Login ekranı modern yaşıl gradient fonla görünür.</p>
+  <ul class="steps">
+    <li>İstifadəçi adı: <code>rw_01</code></li>
+    <li>Şifrə: <code>regional123</code></li>
+    <li><strong>"Daxil ol"</strong> basın</li>
+  </ul>
+  <p>Ana səhifə açılır. Aşağıdakı elementləri görməlisiniz:</p>
+  <ul>
+    <li>Yuxarıda yaşıl header, sizin adınız və bölgəniz</li>
+    <li>İki statistik kart (bu həftə yoxlama, açıq şikayət)</li>
+    <li>5 böyük klikləyən kart (Yoxlama, Şikayət, Hesabat, Material, Layihələr)</li>
+    <li>Aşağıda naviqasiya bar</li>
+  </ul>
+
+  <h3><span class="num">7.3</span>Test yoxlaması qeyd edin</h3>
+  <ul class="steps">
+    <li><strong>🔍 Yeni Yoxlama</strong> kartına toxunun</li>
+    <li>Layihə seçin (region-un layihələrindən)</li>
+    <li>Yoxlama növü: "Planlı yoxlama"</li>
+    <li>Keyfiyyət balı: 8</li>
+    <li>Hesabat: "Test üçün ilk mobile yoxlama — sistem işləyir"</li>
+    <li><strong>"Yoxlamanı saxla"</strong> basın</li>
+    <li>Yaşıl bildiriş görəcəksiniz: "✅ Yoxlama #XXX saxlanıldı!"</li>
+  </ul>
+
+  <h3><span class="num">7.4</span>Mac-da Dashboard-da yoxlayın</h3>
+  <p>İndi Mac-da RStudio-dakı dashboard-a qayıdın:</p>
+  <ul class="steps">
+    <li>Dashboard-da <strong>"Audit Log"</strong> tab-ını açın (əgər yoxdursa)</li>
+    <li>Və ya <strong>"Yoxlamalar"</strong> / <strong>"İnspections"</strong> tab-ına keçin</li>
+    <li>30 saniyə gözləyin — auto-refresh var</li>
+    <li>Siyahıda ən üstdə <strong>sizin test yoxlamanız</strong> görünəcək!</li>
+    <li>Mənbə: <em>mobile</em>, İstifadəçi: <em>rw_01</em></li>
+  </ul>
+
+  <div class="callout tip">
+    <div class="callout-title">🎉 Təbriklər!</div>
+    <div class="callout-body">
+      Əgər Dashboard-da telefondan göndərdiyiniz yoxlama görünürsə — 
+      <strong>sistem tam işləyir!</strong> Bu anda real bölgə işçiləri də 
+      telefondan məlumat göndərə bilər və siz real-time görəcəksiniz.
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 8. MOBILE ═══ -->
+<section id="mobile">
+  <div class="section-marker">Fəsil 8</div>
+  <h2 class="section-title">Telefonda <em>istifadə</em> — hər addım</h2>
+  <p class="section-lead">
+    Bölgə işçisi telefondan Regional app-ı istifadə edir. Bu fəsildə 
+    <strong>hər ekran, hər düymə, hər əməliyyat</strong> təsvir olunur.
+  </p>
+
+  <h3><span class="num">8.1</span>Birinci dəfə qoşulma</h3>
+  <p>Bölgə işçisi (məs. Əliyev Rəşad — rw_01):</p>
+  <ul class="steps">
+    <li>iPhone-da <strong>Safari</strong> açır</li>
+    <li>Ünvan: <code>http://100.95.25.77:3839</code></li>
+    <li>Login: <code>rw_01</code> / <code>regional123</code></li>
+    <li><strong>Ana ekrana əlavə edir</strong> (Share → Add to Home Screen)</li>
+    <li>Sonra Home Screen-də "ARTI Regional" icon kimi görünür</li>
+  </ul>
+
+  <h3><span class="num">8.2</span>Ana səhifə</h3>
+  <p>Login olduqdan sonra ana səhifə açılır:</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Element</th><th>Nə edir</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Header (yaşıl)</strong></td><td>İstifadəçinin adı, bölgəsi, "Çıxış" düyməsi</td></tr>
+        <tr><td><strong>Stats kartları</strong></td><td>Bu həftə yoxlamalar, açıq şikayətlər</td></tr>
+        <tr><td><strong>🔍 Yeni Yoxlama</strong></td><td>Layihə üçün keyfiyyət yoxlaması</td></tr>
+        <tr><td><strong>📧 Şikayət Qeydə Al</strong></td><td>Vətəndaşdan gələn müraciət</td></tr>
+        <tr><td><strong>📋 Gündəlik Hesabat</strong></td><td>Bu günkü iş haqqında</td></tr>
+        <tr><td><strong>📦 Material İdarəsi</strong></td><td>Anbar əməliyyatları</td></tr>
+        <tr><td><strong>🏗 Mənim Layihələrim</strong></td><td>Bölgə layihələri siyahısı</td></tr>
+        <tr><td><strong>Bottom Nav</strong></td><td>5 ikonla sürətli keçid</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="num">8.3</span>Yoxlama qeydə almaq</h3>
+  <div class="flow">
+    <div class="flow-box highlight"><span class="flow-icon">🏠</span>Ana səhifədə "🔍 Yeni Yoxlama" basın</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">📋</span>Layihə seçin (bölgənin aktiv layihələri)</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">🏷</span>Yoxlama növü: Planlı / Planxarici / Təhvil</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">⭐</span>Keyfiyyət balı slider (1-10)</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">📝</span>Tapılan nöqsan sayı, həll olunan sayı</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">💬</span>Detallı hesabat mətni</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">📸</span>Foto əlavə et (kamera və ya galeriyadan)</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box highlight"><span class="flow-icon">✅</span>"Yoxlamanı saxla" — təsdiq</div>
+  </div>
+
+  <h3><span class="num">8.4</span>Material əməliyyatları</h3>
+  <p>Material İdarəsi kartına toxunduqdan sonra 4 növ əməliyyat görünür:</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Əməliyyat</th><th>Nə edir</th><th>Nə vaxt?</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>➕ Anbara daxil</strong></td>
+          <td>Material qəbul olur, qalıq artır</td>
+          <td>Satıcıdan material alındıqda, qaimə ilə birlikdə</td>
+        </tr>
+        <tr>
+          <td><strong>📤 Layihəyə çıxar</strong></td>
+          <td>Material anbar-dan layihəyə ötürülür, qalıq azalır</td>
+          <td>Tikintidə istifadə üçün götürüldükdə</td>
+        </tr>
+        <tr>
+          <td><strong>❌ Zədəli/İtki</strong></td>
+          <td>Material silinir (zədəli, yağış, itki)</td>
+          <td>Çürüyüb, çatlayıb, oğurlanıb — faktla</td>
+        </tr>
+        <tr>
+          <td><strong>🔄 Qaytarma</strong></td>
+          <td>Layihədən artan material anbara qaytarılır</td>
+          <td>İş bitdi, artıqlıq var — təkrar istifadə üçün</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="num">8.5</span>Material "Anbara daxil et" addımları</h3>
+  <div class="flow">
+    <div class="flow-box highlight"><span class="flow-icon">📦</span>Material → ➕ Anbara daxil</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">🏢</span>Anbar seçin (region anbarları)</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">🔎</span>Material seçin (204 materialdan)</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">💰</span>Cari qalıq avtomatik göstərilir</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">#</span>Miqdar + vahid qiyməti (AZN)</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">📄</span>Mənbə/qaimə nömrəsi</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box"><span class="flow-icon">📸</span>Qaimə fotosu əlavə edilir</div>
+    <div class="flow-arrow">▼</div>
+    <div class="flow-box highlight"><span class="flow-icon">✅</span>Qəbul et → qalıq yenilənir</div>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-title">📸 Fotoları birbaşa kameradan</div>
+    <div class="callout-body">
+      Safari-də "Fayl seç" basanda, iPhone iki seçim verir:
+      <ul style="margin: 8px 0 0 20px;">
+        <li><strong>"Take Photo"</strong> — dərhal kamera açılır, foto çək, istifadə</li>
+        <li><strong>"Choose Photo"</strong> — qaleryadan seç</li>
+        <li><strong>"Browse"</strong> — Files app-dan</li>
+      </ul>
+      Sahədə olan işçi "Take Photo" ilə dərhal təzə foto ala bilər.
+    </div>
+  </div>
+
+  <h3><span class="num">8.6</span>Çıxış</h3>
+  <p>Hər gün iş bitdikdə — header-də <strong>"Çıxış"</strong> düyməsi:</p>
+  <ul>
+    <li>Session bağlanır</li>
+    <li>Audit log-a <code>LOGOUT</code> qeyd olunur</li>
+    <li>Login səhifəsinə qayıdır</li>
+  </ul>
+  <p>
+    Əgər işçi "Çıxış" basmasa da — Shiny avtomatik 30 dəqiqədən sonra 
+    session-u bağlayır.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 9. DASHBOARD WORKFLOW ═══ -->
+<section id="dashboard-workflow">
+  <div class="section-marker">Fəsil 9</div>
+  <h2 class="section-title">Dashboard-da <em>gündəlik</em> iş axını</h2>
+  <p class="section-lead">
+    Dashboard — sizin komanda mərkəzinizdir. Burada bütün bölgələrdən gələn 
+    məlumatları birləşmiş şəkildə görürsünüz.
+  </p>
+
+  <h3><span class="num">9.1</span>Əsas tab-lar</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Tab</th><th>Məzmun</th><th>İstifadə</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Dashboard / Ana</strong></td>
+          <td>Ümumi KPI-lar, qrafiklər, xəritə</td>
+          <td>Səhər ilk baxış — ümumi vəziyyət</td>
+        </tr>
+        <tr>
+          <td><strong>Layihələr</strong></td>
+          <td>120 layihə — status, büdcə, irəliləyiş</td>
+          <td>Layihələri izləmə</td>
+        </tr>
+        <tr>
+          <td><strong>Yoxlamalar</strong></td>
+          <td>Bütün inspections — tarixlə</td>
+          <td>Keyfiyyət kontrolu</td>
+        </tr>
+        <tr>
+          <td><strong>Şikayətlər</strong></td>
+          <td>Vətəndaş müraciətləri</td>
+          <td>Prioritetə görə cavab</td>
+        </tr>
+        <tr>
+          <td><strong>Hesabatlar</strong></td>
+          <td>Gündəlik hesabatlar bölgələrdən</td>
+          <td>Sahədəki vəziyyət</td>
+        </tr>
+        <tr>
+          <td><strong>Material</strong></td>
+          <td>Anbar qalıqları, əməliyyatlar</td>
+          <td>Təchizat izlənməsi</td>
+        </tr>
+        <tr>
+          <td><strong>Audit Log</strong></td>
+          <td>Hər əməliyyatın izi — kim, nə, nə vaxt</td>
+          <td>Real-time monitoring</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="num">9.2</span>Audit Log tab — ən vacib</h3>
+  <p>Bu tab sizə bütün əməliyyatların <strong>real-time izini</strong> verir:</p>
+  <ul>
+    <li>Kim (hansı istifadəçi)</li>
+    <li>Nə etdi (INSERT, UPDATE, DELETE)</li>
+    <li>Hansı cədvələ</li>
+    <li>Nə vaxt</li>
+    <li>Haradan (mobile / dashboard)</li>
+    <li>IP ünvanı</li>
+    <li>Uğurlu / uğursuz</li>
+  </ul>
+
+  <h4>Detal paneli</h4>
+  <p>
+    Audit Log cədvəlində bir sətri seçəndə — sağ tərəfdə detal paneli açılır. 
+    Həmin qeydin tam məzmununu (məsələn, yoxlama hesabatı, əlavə edilmiş fotolar) 
+    göstərir.
+  </p>
+
+  <div class="callout tip">
+    <div class="callout-title">🔄 Smart auto-refresh</div>
+    <div class="callout-body">
+      Audit Log hər 30 saniyədə avtomatik yenilənir. <strong>Amma</strong> əgər siz 
+      cədvəldə bir sətri seçmisinizsə (detal panelinə baxırsınızsa), refresh 
+      <strong>dayanır</strong> ki, seçim yoxa çıxmasın. Detal panelini bağladıqdan sonra 
+      refresh davam edir.
+    </div>
+  </div>
+
+  <h3><span class="num">9.3</span>Gündəlik axın — tipik gün</h3>
+  <ul class="steps">
+    <li><strong>09:00</strong> — Mac-ı aç, sistem işə sal (əvvəlki fəsillərdə göstərildiyi kimi)</li>
+    <li><strong>09:10</strong> — Dashboard "Ana" tab — gecədə baş verənlərə ümumi baxış</li>
+    <li><strong>09:30</strong> — "Şikayətlər" tab — yeni/kritik şikayətlərə cavab</li>
+    <li><strong>10:00-13:00</strong> — Audit Log açıq qoy, real-time bölgələrdən gələnlərə bax</li>
+    <li><strong>13:00-14:00</strong> — Nahar (sistem arxa planda işləyir)</li>
+    <li><strong>14:00-18:00</strong> — Layihələr, hesabatlar, analitika</li>
+    <li><strong>18:00</strong> — Dashboard bağla, regional app arxa planda qalsın (bölgə işçiləri üçün)</li>
+  </ul>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 10. MONITORING ═══ -->
+<section id="monitoring">
+  <div class="section-marker">Fəsil 10</div>
+  <h2 class="section-title">Real-time <em>monitorinq</em></h2>
+  <p class="section-lead">
+    Regional app arxa planda işlədiyi üçün, hər hansı problem olarsa — 
+    log faylında görünür. Bu fəsildə bu faylı oxumağın yolları var.
+  </p>
+
+  <h3><span class="num">10.1</span>Real-time log izləmə</h3>
+  <p>
+    Terminal-da yeni pəncərə açın (<kbd>⌘</kbd> + <kbd>N</kbd>), aşağıdakını icra edin:
+  </p>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Live log</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>tail -f ~/Desktop/ARTI_Universal_Platform/regional.log</code></pre>
+  </div>
+  <p>
+    Bu pəncərə bağlanana qədər hər log sətirini real-time göstərir. 
+    Dayandırmaq üçün: <kbd>Ctrl</kbd> + <kbd>C</kbd>
+  </p>
+
+  <h3><span class="num">10.2</span>Son log sətirlərinə bax</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Son 50 sətir</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>tail -50 ~/Desktop/ARTI_Universal_Platform/regional.log</code></pre>
+  </div>
+
+  <h3><span class="num">10.3</span>Xətaları axtar</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Error axtarışı</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>grep -i "error\|warning\|xəta" ~/Desktop/ARTI_Universal_Platform/regional.log | tail -20</code></pre>
+  </div>
+
+  <h3><span class="num">10.4</span>Regional app hələ işləyirmi?</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Status yoxla</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>if lsof -ti:3839 > /dev/null; then
+  PID=$(lsof -ti:3839)
+  echo "✅ Regional app işləyir (PID: $PID, port 3839)"
+  
+  # Nə qədər vaxtdır işləyir?
+  ps -o etime= -p $PID | xargs echo "⏱ İş müddəti:"
+  
+  # Nə qədər memory istifadə edir?
+  ps -o rss= -p $PID | awk '{printf "💾 Memory: %.1f MB\n", $1/1024}'
+else
+  echo "❌ Regional app işləmir!"
+fi</code></pre>
+  </div>
+
+  <h3><span class="num">10.5</span>Bu gün neçə əməliyyat oldu?</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Bu günün statistikası</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>psql arti_construction -c "
+SELECT 
+  source,
+  action,
+  COUNT(*) AS count
+FROM audit.query_log
+WHERE created_at::date = CURRENT_DATE
+GROUP BY source, action
+ORDER BY source, count DESC;
+"</code></pre>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 11. STOP ═══ -->
+<section id="stop">
+  <div class="section-marker">Fəsil 11</div>
+  <h2 class="section-title">Sistemin <em>düzgün</em> dayandırılması</h2>
+  <p class="section-lead">
+    İş günü bitdikdə və ya kompüteri bağladıqda — bəzi addımlar var ki, 
+    sistem təmiz dayansın.
+  </p>
+
+  <h3><span class="num">11.1</span>Dashboard-ı dayandırın</h3>
+  <p>RStudio-da sadəcə <strong>Stop ⏹</strong> düyməsinə basın (Run App olmuş yerdə).</p>
+
+  <h3><span class="num">11.2</span>Regional app-ı dayandırın (əgər istəyirsinizsə)</h3>
+
+  <div class="callout note">
+    <div class="callout-title">💭 Regional app-ı dayandırmaq lazımdırmı?</div>
+    <div class="callout-body">
+      <strong>Yox!</strong> Regional app-ı <strong>gecə də açıq qoya bilərsiniz</strong> — 
+      çox az resurs istifadə edir (~200 MB RAM). Bölgə işçiləri 24/7 qoşula bilər.
+      <br><br>
+      <strong>Yalnız</strong> bu hallarda dayandırın:
+      <ul style="margin-left: 20px; margin-top: 4px;">
+        <li>Mac-ı tamam söndürəcəksinizsə</li>
+        <li>Regional app-da yeniləmə edirsiniz</li>
+        <li>Port 3839-da başqa iş lazımdır</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Regional dayandır</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>PID_FILE=~/Desktop/ARTI_Universal_Platform/regional.pid
+
+if [ -f "$PID_FILE" ]; then
+  PID=$(cat $PID_FILE)
+  if ps -p $PID > /dev/null 2>&1; then
+    kill $PID
+    sleep 2
+    if ps -p $PID > /dev/null 2>&1; then
+      echo "⚠️ Yumşaq dayanmadı, sərt öldürürük..."
+      kill -9 $PID
+    fi
+    echo "✅ Regional app dayandırıldı (PID: $PID)"
+  else
+    echo "ℹ️ PID $PID artıq işləmirdi"
+  fi
+  rm $PID_FILE
+else
+  echo "ℹ️ PID faylı yoxdur"
+  
+  # Hər halda port 3839-u yoxla
+  PORT_PID=$(lsof -ti:3839)
+  if [ -n "$PORT_PID" ]; then
+    kill $PORT_PID && echo "✅ Port 3839 proses öldürüldü: $PORT_PID"
+  fi
+fi</code></pre>
+  </div>
+
+  <h3><span class="num">11.3</span>Mac-ı söndürmə</h3>
+  <p>
+    Mac-ı söndürdükdə, əgər regional app hələ işləyirsə — macOS onu avtomatik 
+    dayandırır. Amma daha təmiz olması üçün əvvəl yuxarıdakı əmri icra edin, 
+    sonra söndürün.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 12. TROUBLESHOOT ═══ -->
+<section id="troubleshoot">
+  <div class="section-marker">Fəsil 12</div>
+  <h2 class="section-title">Problemlər <em>və</em> həlləri</h2>
+  <p class="section-lead">
+    Təcrübədə qarşılaşa biləcəyiniz problemlər və hər birinə dəqiq çözüm. 
+    Problem görsəniz — əvvəl bu bölməyə baxın.
+  </p>
+
+  <h3><span class="num">12.1</span>PostgreSQL işləmir</h3>
+  <div class="callout danger">
+    <div class="callout-title">❌ "pg_isready: connection refused"</div>
+    <div class="callout-body">
+      PostgreSQL xidməti dayanıb. Yenidən başladın:
+    </div>
+  </div>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — PostgreSQL başlat</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>brew services restart postgresql@18
+sleep 5
+pg_isready -h localhost -p 5432</code></pre>
+  </div>
+
+  <h3><span class="num">12.2</span>Port 3839 məşğuldur</h3>
+  <div class="callout danger">
+    <div class="callout-title">❌ "Address already in use"</div>
+    <div class="callout-body">
+      Başqa proses port 3839-u tutub. Onu azad edin:
+    </div>
+  </div>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Port azad et</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>PID=$(lsof -ti:3839)
+if [ -n "$PID" ]; then
+  echo "Port 3839-da proses: $PID"
+  kill -9 $PID
+  echo "✅ Port azad edildi"
+else
+  echo "✅ Port onsuz da boşdur"
+fi</code></pre>
+  </div>
+
+  <h3><span class="num">12.3</span>Telefondan açılmır</h3>
+  <div class="callout warning">
+    <div class="callout-title">⚠️ "Safari can't connect to the server"</div>
+    <div class="callout-body">Çoxlu səbəbi ola bilər:</div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Səbəb</th><th>Yoxla</th><th>Həll</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tailscale telefonda off</td>
+          <td>iPhone-da Tailscale app aç — yaşıl?</td>
+          <td>Toggle ON et</td>
+        </tr>
+        <tr>
+          <td>Mac-da Tailscale off</td>
+          <td>Menu bar-da icon tap</td>
+          <td>Click → "Connect"</td>
+        </tr>
+        <tr>
+          <td>Regional app dayanıb</td>
+          <td><code>lsof -ti:3839</code></td>
+          <td>Fəsil 5.2-ni təkrarla</td>
+        </tr>
+        <tr>
+          <td>https istifadə olunur</td>
+          <td>Ünvan çubuğunda https?</td>
+          <td>http ilə əl ilə yaz</td>
+        </tr>
+        <tr>
+          <td>IP səhvdir</td>
+          <td><code>tailscale ip -4</code></td>
+          <td>Doğru IP-ni istifadə et</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="num">12.4</span>Dashboard açılmır</h3>
+  <div class="callout warning">
+    <div class="callout-title">⚠️ Run App basdıqda xəta</div>
+    <div class="callout-body">
+      R Console-da qırmızı xəta mətnini oxuyun. Ən çox görülən:
+      <ul style="margin: 8px 0 0 20px;">
+        <li><code>could not connect to server</code> — PostgreSQL işləmir (12.1-ə bax)</li>
+        <li><code>could not find function</code> — paket yoxdur (installeit)</li>
+        <li><code>object not found</code> — cədvəl silinib (yoxla psql ilə)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3><span class="num">12.5</span>Hər şey tam yenidən başlatmaq lazımdır</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Terminal — Tam yenidən başlat</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code># 1. Bütün R proseslərini öldür
+pkill -f "Rscript.*shiny" 2>/dev/null
+echo "✅ R prosesləri dayandırıldı"
+
+# 2. Portları azad et
+kill -9 $(lsof -ti:3838) 2>/dev/null
+kill -9 $(lsof -ti:3839) 2>/dev/null
+echo "✅ Portlar boşaldı"
+
+# 3. PostgreSQL yenilə
+brew services restart postgresql@18
+sleep 5
+pg_isready && echo "✅ PostgreSQL hazır"
+
+# 4. PID faylını təmizlə
+rm -f ~/Desktop/ARTI_Universal_Platform/regional.pid
+echo "✅ Cache təmizləndi"
+
+echo ""
+echo "Artıq Fəsil 5.2-ni təkrarlaya bilərsiniz"</code></pre>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 13. CHEATSHEET ═══ -->
+<section id="cheatsheet">
+  <div class="section-marker">Fəsil 13</div>
+  <h2 class="section-title">Tezyaddaş — <em>vacib</em> əmrlər</h2>
+  <p class="section-lead">
+    Hər gün tez-tez istifadə edəcəyiniz əmrlərin siyahısı. 
+    Bu bölməni çap edib stolun üstünə qoya bilərsiniz.
+  </p>
+
+  <h3>🚀 Başlatma (səhər)</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Qısa başlatma</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code># 1. PostgreSQL
+pg_isready -h localhost -p 5432 || brew services start postgresql@18
+
+# 2. Regional app arxa planda
+cd ~/Desktop/ARTI_Universal_Platform/domains/construction_management/regional
+kill -9 $(lsof -ti:3839) 2>/dev/null
+nohup Rscript -e "options(shiny.port=3839); options(shiny.host='0.0.0.0'); shiny::runApp('.', launch.browser=FALSE)" > ~/Desktop/ARTI_Universal_Platform/regional.log 2>&1 &
+echo $! > ~/Desktop/ARTI_Universal_Platform/regional.pid
+
+# 3. 10 saniyə gözlə və yoxla
+sleep 10 && lsof -ti:3839 && echo "✅ Hazırdır"
+
+# 4. RStudio-da dashboard/app.R aç, Run App bas</code></pre>
+  </div>
+
+  <h3>🔍 Status yoxlama</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Tez status</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>echo "═══ SİSTEM STATUSU ═══"
+pg_isready 2>&1 | head -1
+lsof -ti:3838 > /dev/null && echo "✅ Dashboard: 3838" || echo "❌ Dashboard: OFF"
+lsof -ti:3839 > /dev/null && echo "✅ Regional:  3839" || echo "❌ Regional:  OFF"
+/Applications/Tailscale.app/Contents/MacOS/Tailscale ip -4 2>/dev/null</code></pre>
+  </div>
+
+  <h3>📜 Log baxma</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Son 30 sətir</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>tail -30 ~/Desktop/ARTI_Universal_Platform/regional.log</code></pre>
+  </div>
+
+  <h3>🛑 Dayandırma (axşam)</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-label">Hər şeyi dayandır</span>
+      <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+    </div>
+<pre><code>kill $(cat ~/Desktop/ARTI_Universal_Platform/regional.pid) 2>/dev/null
+rm -f ~/Desktop/ARTI_Universal_Platform/regional.pid
+echo "✅ Regional dayandırıldı"</code></pre>
+  </div>
+
+  <h3>🌐 İstifadəçi ünvanları</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Kim</th><th>Haradan</th><th>Ünvan</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Siz (admin)</strong></td>
+          <td>Mac brauzer</td>
+          <td><code>http://127.0.0.1:3838</code></td>
+        </tr>
+        <tr>
+          <td><strong>Siz — test regional</strong></td>
+          <td>Mac brauzer</td>
+          <td><code>http://127.0.0.1:3839</code></td>
+        </tr>
+        <tr>
+          <td><strong>Bölgə işçiləri</strong></td>
+          <td>iPhone / Android</td>
+          <td><code>http://100.95.25.77:3839</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>🔑 Test hesablar</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Username</th><th>Şifrə</th><th>Rol</th><th>Region</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>admin</code></td><td>—</td><td>admin</td><td>—</td></tr>
+        <tr><td><code>rw_01</code></td><td>regional123</td><td>regional_worker</td><td>16</td></tr>
+        <tr><td><code>rw_02</code></td><td>regional123</td><td>regional_worker</td><td>2</td></tr>
+        <tr><td><code>rw_03</code></td><td>regional123</td><td>regional_worker</td><td>3</td></tr>
+        <tr><td colspan="4" style="text-align:center; font-style: italic;">… rw_10-a qədər, hər biri fərqli region</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══ 14. FAQ ═══ -->
+<section id="faq">
+  <div class="section-marker">Fəsil 14</div>
+  <h2 class="section-title">Tez-tez <em>verilən</em> suallar</h2>
+
+  <div class="faq-item">
+    <div class="faq-q">Mac bağlanarsa, regional app-a nə olur?</div>
+    <div class="faq-a">
+      Regional app dayanır. Telefon işçiləri qoşula bilməyəcəklər. Səhər Mac-ı 
+      açanda yenidən Fəsil 5-i icra edin — 3 dəqiqəyə yenidən işləyəcək.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Regional app-ı Mac açıldıqda avtomatik başlaya bilərmi?</div>
+    <div class="faq-a">
+      Bəli, macOS-un <strong>LaunchAgent</strong> sistemi ilə bu mümkündür. 
+      Amma bu inkişaf etmiş mövzudur — istəsəniz, ayrıca dərs təşkil edərik.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Bir neçə bölgə işçisi eyni anda daxil ola bilərmi?</div>
+    <div class="faq-a">
+      Bəli! Shiny çoxlu session dəstəkləyir. Yüzlərlə işçi eyni anda qoşula 
+      bilər — hər biri öz session-ında işləyir.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Məlumatlar kənar internetə çıxırmı?</div>
+    <div class="faq-a">
+      <strong>Xeyr.</strong> Bütün məlumat sizin Mac-da qalır. Tailscale VPN 
+      şifrələnmiş kanal yaradır, amma məlumat yalnız sizin cihazlarınız arasında 
+      gedir, kənar heç bir serverə yox.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Şifrəni necə dəyişdirim?</div>
+    <div class="faq-a">
+      Bütün istifadəçi şifrələri bcrypt ilə xeşlənib bazada saxlanır. Dəyişdirmək 
+      üçün SQL əmri ilə yeni bcrypt hash yaratmaq lazımdır. Əgər konkret istifadəçinin 
+      şifrəsini dəyişmək istəyirsinizsə, bir növbəti dərsdə edə bilərik.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Foto həqiqətən saxlanır?</div>
+    <div class="faq-a">
+      Bəli. Bütün fotolar <code>~/Desktop/ARTI_Universal_Platform/uploads/</code> 
+      qovluğuna saxlanır. Alt qovluqlar: inspections, complaints, daily_reports, 
+      material_movements. Bazada isə <code>construction.attachments</code> 
+      cədvəlində metadata qeyd olunur.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Regional app-da təzə feature əlavə etmək istəsəm?</div>
+    <div class="faq-a">
+      <code>regional/app.R</code> faylı dəyişdirilir. Sonra: əvvəlki regional app-ı 
+      dayandırırsınız (Fəsil 11.2), yenidən başladırsınız (Fəsil 5.2). Yeni kod 
+      aktivləşir, telefon işçiləri avtomatik yeniliyini görəcəklər.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Backup necə edim?</div>
+    <div class="faq-a">
+      Ən vacibi PostgreSQL bazasıdır. Gündəlik avtomatik backup üçün 
+      <code>pg_dump arti_construction > backup_$(date +%Y%m%d).sql</code> əmri 
+      istifadə olunur. Həmçinin uploads/ qovluğunu da Time Machine-ə daxil edin.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Yeni bölgə işçisi əlavə etmək?</div>
+    <div class="faq-a">
+      Yeni işçi üçün <code>audit.users</code> cədvəlinə INSERT lazımdır (username, 
+      password_hash, role='regional_worker', region_id). Bu admin rolunun 
+      səlahiyyətidir — dashboard-da "İstifadəçilər" tab əlavə edilsə, bu GUI-dən 
+      edilə bilər. Plana qoyulub.
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <div class="brand">ARTI Universal Platform</div>
+  <p>İstifadəçi Təlimatı · v2.0</p>
+  <p>Talıbov Tariyel İsmayıl oğlu · Deputy Director, ARTI</p>
+  <p class="mono">Son yeniləmə: 20 Aprel 2026</p>
+</footer>
+
+</div>
+
+<script>
+function copyCode(btn) {
+  const code = btn.closest('.code-wrap').querySelector('pre').innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    const original = btn.textContent;
+    btn.textContent = '✓ Köçürüldü';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// Smooth scroll for TOC
+document.querySelectorAll('.toc a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,35 +1,51 @@
-# Backup faylları
+# ═══ Backup faylları (bütün formatlar) ═══
 *.bak
 *.OLD*
 *.backup
+*.backup_*
 app.R.before_*
+app.R.backup_*
+app_v2.R.before_*
+app_v2.R.backup_*
 
-# Log faylları
+# ═══ Log və Runtime faylları ═══
 *.log
 regional.log
-
-# PID faylları
+dashboard.log
 *.pid
+*.pid.lock
 
-# Uploads (foto/pdf böyük fayllar - ayrıca saxlanılır)
+# ═══ Uploads qovluğu (foto/PDF ayrıca idarə olunur) ═══
 uploads/
 
-# Sensitive data
+# ═══ Sensitive məlumat ═══
 .env
 shared/.env
+*_secret.yml
+*_credentials.yml
 
-# macOS
+# ═══ macOS ═══
 .DS_Store
+.AppleDouble
+.LSOverride
 
-# R
+# ═══ R ərtakı ═══
 .Rhistory
 .Rproj.user/
 .RData
+.Ruserdata
+*.Rproj
 
-# Database backups
+# ═══ Database dumplar ═══
 *.sql.gz
 *.dump
+*.sql.bak
 
-# Temporary
+# ═══ Təmir tikinti köhnə referansı ═══
+Claude_Modei_Təmir_tikinti/
+
+# ═══ Temporary ═══
 /tmp/
 *.tmp
+*.swp
+*~

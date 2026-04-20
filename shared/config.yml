@@ -1,0 +1,72 @@
+# ═══════════════════════════════════════════════════════════════
+# ARTI Universal Platform — Mərkəzi Konfiqurasiya
+# ═══════════════════════════════════════════════════════════════
+
+# Database bağlantısı
+database:
+  # Smart mode: localhost əvvəl sına, sonra Tailscale
+  mode: smart  # "smart", "localhost", "tailscale"
+  
+  localhost:
+    host: localhost
+    port: 5432
+    dbname: arti_construction
+    user: royatalibova
+    password: ""
+  
+  tailscale:
+    host: 100.116.171.28  # Multipass VM Tailscale IP
+    port: 5432
+    dbname: arti_construction
+    user: royatalibova
+    password: ""
+  
+  # Pool ayarları
+  pool_min: 2
+  pool_max: 10
+  connect_timeout_sec: 5
+
+# Tətbiq
+app:
+  title: "ARTI Universal Platform"
+  title_regional: "ARTI Regional"
+  title_dashboard: "ARTI Dashboard"
+  currency: AZN
+  timezone: Asia/Baku
+
+# Fayl yükləmə
+uploads:
+  directory: "~/Desktop/ARTI_Universal_Platform/uploads"
+  max_file_size_mb: 5
+  allowed_types:
+    - image/jpeg
+    - image/png
+    - application/pdf
+  allowed_extensions:
+    - jpg
+    - jpeg
+    - png
+    - pdf
+
+# AI (Claude API)
+ai:
+  enabled: true
+  model: claude-sonnet-4-5
+  max_tokens: 4000
+  # API key .env-dən gəlir (təhlükəsizlik)
+
+# Audit
+audit:
+  enabled: true
+  log_all_queries: true
+  retention_days: 90
+
+# Regional
+regional:
+  port: 3839
+  session_timeout_min: 30
+
+# Dashboard
+dashboard:
+  port: 3838
+  auto_refresh_sec: 30
